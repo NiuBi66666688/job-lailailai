@@ -1,0 +1,30 @@
+job-lailailai
+Copyright 2026 the job-lailailai contributors
+
+This product includes software developed as part of
+OpenDesign (https://github.com/nexu-io/open-design),
+licensed under the Apache License, Version 2.0.
+
+  Upstream paths used:
+    design-systems/vercel/tokens.css
+    design-systems/editorial/tokens.css
+    design-systems/stripe/tokens.css
+
+  Local adaptations are documented in:
+    scripts/design_systems.py            (module docstring, "与上游的差异" 一节)
+    references/design-systems.md         (第六节「来源与许可」)
+
+  Summary of modifications:
+    - Design tokens were transcribed from CSS custom properties into Python
+      dictionaries (pre-compilation) so that theme switching is a dict swap.
+    - CSS color-mix(in oklab, ...) expressions were resolved at build time into
+      concrete hex values using a pure-Python oklab implementation, removing the
+      Chrome 111+ / Safari 16.2+ requirement from generated artifacts.
+    - Derived tokens (-soft / -ink variants, priority colors) were added.
+    - CJK font fallbacks were appended to every font stack.
+    - Vercel's --surface-2 was given gray-50 (#fafafa) to preserve block
+      alternation on long pages.
+
+Vercel, Editorial, and Stripe are trademarks of their respective owners.
+They are referenced here only to identify the origin of the design language;
+their use does not imply any endorsement of this project.

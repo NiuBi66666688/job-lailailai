@@ -1,0 +1,17 @@
+# 统一换行符：仓库内一律 LF，检出时按平台自动处理。
+# 这是必要的——脚本与 Markdown 在 Windows 上默认会变成 CRLF，
+# 跨平台协作时会产生整文件 diff 噪音，shell 脚本还可能直接跑不起来。
+* text=auto eol=lf
+
+# 二进制文件不要做换行符转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.pdf binary
+
+# 生成物标记（在 GitHub 语言统计里不当作主要语言）
+docs/preview/*.html linguist-generated=true
+examples/demo.html linguist-generated=true

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.python-version
+
+# 渲染/验证产生的临时文件
+_probe*.html
+_verify_out.html
+_p_*.html
+_raw_*.png
+*.tmp
+
+# 打包产物
+dist/
+*.zip
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

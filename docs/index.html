@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>job-lailailai · 求职简历蜕变引导</title>
+<meta name="description" content="把招聘网站的真实岗位 JD，翻译成可执行的简历蜕变方案。可移植 agent skill，零第三方依赖。">
+<style>
+  :root{
+    --bg:#fafafa; --surface:#fff; --fg:#171717; --fg-2:#444; --muted:#737373;
+    --border:#e6e6e6; --accent:#0070f3; --accent-soft:#eef5ff;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--font);
+       -webkit-font-smoothing:antialiased;line-height:1.65}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  header{padding:76px 0 44px;border-bottom:1px solid var(--border)}
+  .tag{display:inline-block;font-size:12.5px;font-weight:600;color:var(--accent);
+       background:var(--accent-soft);border-radius:4px;padding:3px 10px;margin-bottom:18px}
+  h1{font-size:40px;font-weight:600;letter-spacing:-.03em;line-height:1.2;margin-bottom:14px}
+  .sub{font-size:17px;color:var(--fg-2);max-width:620px;line-height:1.7}
+  .meta{margin-top:22px;display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+  .meta code{font-family:var(--mono);font-size:12.5px;background:var(--surface);
+             border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--fg-2)}
+
+  section{padding:52px 0;border-bottom:1px solid var(--border)}
+  h2{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+     color:var(--muted);margin-bottom:26px}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{display:block;background:var(--surface);border:1px solid var(--border);
+        border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;
+        transition:border-color .15s ease, box-shadow .15s ease}
+  .card:hover{border-color:#c9c9c9;box-shadow:0 4px 16px rgba(0,0,0,.07)}
+  .card img{display:block;width:100%;border-bottom:1px solid var(--border);background:#fff}
+  .card .body{padding:15px 17px 18px}
+  .card .t{font-size:15px;font-weight:600;margin-bottom:5px}
+  .card .s{font-size:12.5px;color:var(--muted);line-height:1.6}
+  .card .s b{color:var(--fg-2);font-weight:600}
+
+  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px}
+  .step{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+        padding:14px 13px 16px}
+  .step .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+           border:1px solid #d4d4d4;border-radius:4px;font-size:11px;font-weight:600;
+           color:var(--fg-2);margin-bottom:10px}
+  .step .t{font-size:13.5px;font-weight:600;margin-bottom:5px}
+  .step .s{font-size:11.5px;color:var(--muted);line-height:1.55}
+
+  pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+      padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;
+      line-height:1.8;color:var(--fg-2)}
+  pre .c{color:#9a9a9a}
+
+  ul.links{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 26px}
+  ul.links li{font-size:14px;padding-left:18px;position:relative;color:var(--fg-2)}
+  ul.links li::before{content:"→";position:absolute;left:0;color:var(--accent);font-weight:600}
+  ul.links a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--border)}
+  ul.links a:hover{border-bottom-color:var(--accent)}
+
+  footer{padding:38px 0 60px;font-size:12.5px;color:var(--muted);line-height:1.9}
+  footer a{color:var(--fg-2)}
+
+  @media (max-width:760px){
+    h1{font-size:29px}
+    .grid{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr 1fr}
+    ul.links{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="tag">可移植 agent skill</span>
+    <h1>求职简历蜕变引导</h1>
+    <p class="sub">
+      把<b>招聘网站的真实岗位 JD</b>，翻译成用户可执行的简历蜕变方案，
+      最终产出一份单文件可视化 HTML 引导页。
+    </p>
+    <div class="meta">
+      <span>Python <code>&gt;=3.8</code></span>
+      <span>依赖 <code>零第三方</code></span>
+      <span>许可 <code>Apache-2.0</code></span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>三套设计系统 · 在线预览</h2>
+    <div class="grid">
+      <a class="card" href="preview/demo-sci.html">
+        <img src="images/hero-sci.png" alt="sci 理工科主题首屏">
+        <div class="body">
+          <div class="t">sci · 理工科</div>
+          <div class="s"><b>Vercel</b> · 近白画布 / 近黑文字 / 单一蓝强调</div>
+        </div>
+      </a>
+      <a class="card" href="preview/demo-art.html">
+        <img src="images/hero-art.png" alt="art 人文社科主题首屏">
+        <div class="body">
+          <div class="t">art · 人文社科</div>
+          <div class="s"><b>Editorial</b> · 暖纸面 / 衬线标题 / 赭石强调</div>
+        </div>
+      </a>
+      <a class="card" href="preview/demo-biz.html">
+        <img src="images/hero-biz.png" alt="biz 经管商科主题首屏">
+        <div class="body">
+          <div class="t">biz · 经管商科</div>
+          <div class="s"><b>Stripe</b> · 白底 / 藏青文字 / 紫罗兰强调</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>五步流水线</h2>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="t">岗位定锚</div><div class="s">JD 原文与职位要求<br>关键词抽取</div></div>
+      <div class="step"><div class="n">2</div><div class="t">定制简历</div><div class="s">命中优先级重排<br>要求→证据映射</div></div>
+      <div class="step"><div class="n">3</div><div class="t">项目成果</div><div class="s">P0/P1/P2 清单<br>附验收标准</div></div>
+      <div class="step"><div class="n">4</div><div class="t">二创来源</div><div class="s">按学科分流<br>开源/年报/作品集</div></div>
+      <div class="step"><div class="n">5</div><div class="t">蜕变路线</div><div class="s">90 天时间轴<br>自检 + 投递策略</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>快速开始</h2>
+<pre><span class="c"># 1) 获取</span>
+git clone https://github.com/NiuBi66666688/job-lailailai.git
+cd job-lailailai
+
+<span class="c"># 2) 验收（零依赖，不需要 pip install）</span>
+python verify.py
+
+<span class="c"># 3) 装到本机 agent 平台</span>
+python scripts/install.py --detect
+python scripts/install.py --target all --link
+
+<span class="c"># 4) 直接生成一份引导页试试</span>
+python scripts/render.py examples/jobs.sample.json out.html --theme sci</pre>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>文档索引</h2>
+    <ul class="links">
+      <li><a href="https://github.com/NiuBi66666688/job-lailailai#readme">README · 使用说明</a></li>
+      <li><a href="PUBLISH.md">PUBLISH · 发布上线指南</a></li>
+      <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/SKILL.md">SKILL.md · 完整工作流</a></li>
+      <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/references/design-systems.md">设计系统与 token</a></li>
+      <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/references/verify-render.md">渲染验证方法</a></li>
+      <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/references/portability.md">跨平台兼容矩阵</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    设计系统 token 取自
+    <a href="https://github.com/nexu-io/open-design">nexu-io/open-design</a>（Apache-2.0）。
+    本项目以 <a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/LICENSE">Apache-2.0</a> 授权。<br>
+    Vercel / Editorial / Stripe 是各自权利人的商标，此处仅用于指代设计语言来源。
+  </div>
+</footer>
+
+</body>
+</html>

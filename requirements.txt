@@ -1,0 +1,14 @@
+# job-lailailai 依赖声明
+#
+# 本 skill 刻意保持「零第三方依赖」——四个脚本全部只用 Python 标准库。
+# 这是设计取舍：跨平台迁移最大的坑就是依赖装不上。
+#
+# 因此这里不需要写任何包名。安装时请勿执行 pip install，直接跑即可。
+#
+# 运行环境要求
+#   Python >= 3.8（推荐 3.10+）
+#   仅需标准库：argparse / os / sys / json / re / html / shutil / pathlib /
+#               hashlib / subprocess / datetime
+#
+# 若本机没有 python 命令，可尝试 python3 或 py。
+# 一键验收：python verify.py

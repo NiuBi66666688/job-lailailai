@@ -4,6 +4,15 @@
 
 面向**第一次做开源发布**的人：每一步都写清楚「要做什么、需要什么、怎么验证、配什么图」。
 
+> **本文的实例仓库**：<https://github.com/NiuBi66666688/job-lailailai>
+>
+> 下文所有命令里的 `<owner>` 都替换成你的 GitHub 账号名。
+> 想先看结果长什么样，直接打开上面这个地址——它就是按本文流程发布出来的，
+> 包括 README 配图、`docs/PUBLISH.md`、Release 附件和 Pages 在线预览。
+> 最终形态参考：[仓库首页](https://github.com/NiuBi66666688/job-lailailai) ·
+> [Release v1.1.0](https://github.com/NiuBi66666688/job-lailailai/releases/tag/v1.1.0) ·
+> [Pages 预览](https://niubi66666688.github.io/job-lailailai/)
+
 ---
 
 ## 目录

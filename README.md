@@ -556,13 +556,6 @@ agent 只负责理解意图与改写表达。更多坑位见 [`references/portab
 
 ---
 
-## 发布上线
-
-想知道这个仓库是怎么从本地源码推到 GitHub 的、每一步需要什么账号与前置条件、
-每个步骤该配什么图？见 **[`docs/PUBLISH.md`](docs/PUBLISH.md)**。
-
----
-
 ## 许可与致谢
 
 - 本项目代码：**Apache-2.0**，见 [`LICENSE`](LICENSE)。

@@ -1,0 +1,131 @@
+{
+  "_comment": "profile.json 可运行样例。上半部分是第 2 轮技能底牌（供 match_score.py），下半部分是第 4 轮能力盘点（供 capability_matrix.py）。请勿直接用于投递。",
+  "track": "sci",
+  "intent": "broad",
+  "targetIndustry": "",
+  "skills": [
+    "Python", "RAG", "Faiss", "BM25", "向量检索", "LangChain",
+    "Prompt Engineering", "SQL", "Git"
+  ],
+  "experiences": [
+    {
+      "title": "RAG 问答系统课程项目",
+      "stack": "Python / LangChain / Faiss / BM25",
+      "action": "实现混合召回与答案溯源，用评测集做 A/B 对比",
+      "result": "召回率提升 18%，[待补充：线上 QPS 与 P99 延迟]"
+    },
+    {
+      "title": "订单漏斗分析",
+      "stack": "SQL",
+      "action": "对 12 万条订单做分渠道漏斗拆解",
+      "result": "识别出新签增长掩盖流失率翻倍的假性增长"
+    }
+  ],
+  "capabilityMeta": {
+    "assessedAt": "2026-10-18",
+    "method": "self-report-4pt",
+    "catalogVersion": "1.0"
+  },
+  "capabilities": [
+    {
+      "id": "L1-TECH-BUILD",
+      "name": "技术方案落地",
+      "tier": "L1",
+      "cat": "tech",
+      "lv": 2,
+      "scope": ["互联网"],
+      "soft": false,
+      "evidence": "课程项目：实现 RAG 问答 Demo，完成混合召回与答案溯源。[待补充：线上 QPS 与 P99 延迟]"
+    },
+    {
+      "id": "L1-DATA-MODEL",
+      "name": "数据建模与指标口径",
+      "tier": "L1",
+      "cat": "data",
+      "lv": 1,
+      "scope": ["互联网"],
+      "soft": false,
+      "evidence": "[待补充：是否独立设计过维度模型或指标字典]"
+    },
+    {
+      "id": "L2-STRUCT-PROBLEM",
+      "name": "结构化问题拆解",
+      "tier": "L2",
+      "cat": "process",
+      "lv": 3,
+      "scope": ["互联网", "教育"],
+      "soft": false,
+      "evidence": "把「续费率下滑」拆成班型、时段、教师三支，定位到排课时段与家长工作时间冲突，而非教学质量"
+    },
+    {
+      "id": "L2-DATA-LITERACY",
+      "name": "数据素养与指标解读",
+      "tier": "L2",
+      "cat": "data",
+      "lv": 3,
+      "scope": ["互联网", "零售", "教育"],
+      "soft": false,
+      "evidence": "用 SQL 完成 12 万条订单的漏斗分析，识别出新签增长掩盖了流失率翻倍的假性增长"
+    },
+    {
+      "id": "L2-PROJECT-DELIVERY",
+      "name": "项目推进与交付",
+      "tier": "L2",
+      "cat": "process",
+      "lv": 2,
+      "scope": ["互联网"],
+      "soft": false,
+      "evidence": "主导 3 人课程项目，按里程碑交付，评审一次通过"
+    },
+    {
+      "id": "L2-STAKEHOLDER",
+      "name": "跨部门沟通与干系人管理",
+      "tier": "L2",
+      "cat": "people",
+      "lv": 2,
+      "scope": ["教育"],
+      "soft": true,
+      "evidence": "主导 6 次小组评审，把 9 项分歧收敛为 3 项决议，讨论周期由 3 天压缩至 1 天"
+    },
+    {
+      "id": "L2-WRITTEN-EXPR",
+      "name": "书面表达与文档工程",
+      "tier": "L2",
+      "cat": "content",
+      "lv": 2,
+      "scope": ["互联网"],
+      "soft": false,
+      "evidence": "技术博客 12 篇，把踩坑过程写成可复现的排错步骤。[待补充：阅读量与被引用情况]"
+    },
+    {
+      "id": "L2-LEARNING",
+      "name": "快速学习与技术迁移",
+      "tier": "L2",
+      "cat": "process",
+      "lv": 3,
+      "scope": ["互联网", "制造"],
+      "soft": false,
+      "evidence": "两周内从零掌握 Faiss 与 BM25 混合召回并交付可运行 Demo，返工 1 次"
+    },
+    {
+      "id": "L3-JOB-DECONSTRUCT",
+      "name": "岗位能力拆解",
+      "tier": "L3",
+      "cat": "meta",
+      "lv": 2,
+      "scope": ["互联网"],
+      "soft": false,
+      "evidence": "拆过 10 份 JD，能指出至少 1 条「JD 没写但实际必需」的能力"
+    },
+    {
+      "id": "L3-CAP-MATRIX",
+      "name": "能力矩阵自评",
+      "tier": "L3",
+      "cat": "meta",
+      "lv": 1,
+      "scope": ["互联网"],
+      "soft": false,
+      "evidence": "[待补充：对每项能力说出 lv 依据，并给出缺口排序]"
+    }
+  ]
+}

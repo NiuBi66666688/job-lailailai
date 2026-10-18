@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>简历蜕变五步法 · 演示样例</title>
+<title>简历蜕变六步法 · 演示样例</title>
 <style>
 /* 视觉系统：Editorial — 出版物的编排语言：暖纸面、衬线标题、赭石强调、单层柔和投影
    token 取自 OpenDesign 设计系统包（Apache-2.0）
@@ -88,6 +88,16 @@
   --p0-ink: #7c312d;
   --p1-ink: #885b2a;
   --p2-ink: #6c4328;
+  --cap-l1: #9a5a2f;
+  --cap-l2: #ba896b;
+  --cap-l3: #d3b29c;
+  --cap-l1-soft: #f7efe7;
+  --cap-l1-ink: #6c4328;
+  --cap-l2-soft: #faf3ec;
+  --cap-l2-ink: #7f5f4b;
+  --cap-l3-soft: #fcf7f0;
+  --cap-l3-ink: #8e7869;
+  --cap-rail: #ded3c5;
   --surface-translucent: rgba(255, 253, 248, 0.86);
   --accent-quiet: #814b26;
 }
@@ -428,6 +438,138 @@ td.ev{color:var(--fg-2)}
 .notice.info{background:var(--accent-soft);color:var(--accent-ink)}
 .notice.info b{color:var(--accent-ink)}
 
+/* ── 第 6 步：能力迁移矩阵（L1/L2/L3 同色相明度阶梯）────────────── */
+.cap-bar{
+  display:flex;height:10px;border-radius:var(--radius-sm);
+  overflow:hidden;background:var(--cap-rail);
+}
+.cap-seg{height:100%}
+.cap-seg.l1{background:var(--cap-l1)}
+.cap-seg.l2{background:var(--cap-l2)}
+.cap-seg.l3{background:var(--cap-l3)}
+.cap-legend{
+  display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-5);
+  margin-top:var(--space-3);font-size:var(--text-xs);color:var(--fg-2);
+}
+.cap-key{display:flex;align-items:center;gap:var(--space-2)}
+.cap-key::before{
+  content:"";width:8px;height:8px;border-radius:2px;flex:none;background:var(--cap-rail);
+}
+.cap-key.l1::before{background:var(--cap-l1)}
+.cap-key.l2::before{background:var(--cap-l2)}
+.cap-key.l3::before{background:var(--cap-l3)}
+.cap-key b{color:var(--fg);font-weight:600}
+.cap-key .ch{color:var(--meta);font-variant-numeric:tabular-nums}
+
+.cap-verdict{
+  display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);align-items:baseline;
+  margin-top:var(--space-4);padding:var(--space-4) var(--space-5);
+  border:1px solid var(--border-soft);border-left:3px solid var(--accent);
+  border-radius:var(--radius-md);background:var(--accent-soft);
+}
+.cap-verdict .cv-code{
+  font-family:var(--font-mono);font-size:var(--text-xs);font-weight:700;
+  color:var(--accent-ink);letter-spacing:.06em;
+}
+.cap-verdict .cv-label{font-size:var(--text-base);font-weight:700;color:var(--fg)}
+.cap-verdict .cv-stat{
+  font-size:var(--text-xs);color:var(--meta);font-variant-numeric:tabular-nums;
+}
+.cap-verdict .cv-hint{font-size:var(--text-sm);color:var(--fg-2);flex-basis:100%}
+.cap-verdict .cv-reason{font-size:var(--text-xs);color:var(--meta);flex-basis:100%}
+
+.cap-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:var(--space-4);margin-top:var(--space-4);align-items:stretch;
+}
+/* 列即面板：三列能力项数量天然不等（多数人 L2 最多），
+   用面板底色承接短列下方的留白，读作「这一层的容器」而不是「页面没写完」。
+   用 fg-soft 而不是 surface-2：后者在 Editorial 是沙色，三个大色块会压过内容。 */
+.cap-col{
+  display:flex;flex-direction:column;gap:var(--space-1);min-width:0;
+  background:var(--fg-soft);border:1px solid var(--border);
+  border-radius:var(--radius-md);padding:var(--space-3) var(--space-4) var(--space-4);
+}
+.cap-col-h{
+  display:flex;align-items:baseline;gap:var(--space-2);
+  font-size:var(--text-xs);letter-spacing:.06em;color:var(--muted);
+  padding-bottom:var(--space-2);margin-bottom:var(--space-2);
+  border-bottom:1px solid var(--border-soft);
+}
+.cap-col-h .cl{
+  font-family:var(--font-mono);font-weight:700;color:var(--cap-l1-ink);
+  padding-left:var(--space-2);border-left:2px solid var(--cap-l1);
+}
+.cap-col.c2 .cap-col-h .cl{color:var(--cap-l2-ink);border-left-color:var(--cap-l2)}
+.cap-col.c3 .cap-col-h .cl{color:var(--cap-l3-ink);border-left-color:var(--cap-l3)}
+.cap-col-h .cn{margin-left:auto;font-variant-numeric:tabular-nums}
+
+/* 卡片不再自带底色与四边框：面板已经是一层容器，再加一层就是卡片套卡片 */
+.cap-card{
+  border:0;border-left:2px solid var(--cap-l1);
+  padding:var(--space-2) 0 var(--space-2) var(--space-3);
+  background:transparent;
+}
+.cap-col.c2 .cap-card{border-left-color:var(--cap-l2)}
+.cap-col.c3 .cap-card{border-left-color:var(--cap-l3)}
+.cap-card .ct{
+  display:flex;align-items:baseline;gap:var(--space-2);
+  font-size:var(--text-sm);font-weight:600;color:var(--fg);
+}
+.cap-card .ct .hit{
+  font-size:10px;font-weight:700;letter-spacing:.04em;flex:none;
+  padding:1px 5px;border-radius:var(--radius-sm);
+  background:var(--success-soft);color:var(--success-ink);
+}
+.cap-card .cd{font-size:var(--text-xs);color:var(--fg-2);margin-top:var(--space-1);line-height:1.5}
+.cap-card .cf{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap}
+.lv-dots{display:flex;gap:3px;flex:none}
+.lv-dot{width:8px;height:8px;border-radius:2px;background:var(--border)}
+.lv-dot.on{background:var(--cap-l1)}
+.cap-col.c2 .lv-dot.on{background:var(--cap-l2)}
+.cap-col.c3 .lv-dot.on{background:var(--cap-l3)}
+.cap-scope{
+  font-size:10px;padding:1px 6px;border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--fg-2);border:1px solid var(--border-soft);
+}
+.cap-ev{
+  font-size:var(--text-xs);color:var(--meta);margin-top:var(--space-2);line-height:1.5;
+}
+.cap-empty{font-size:var(--text-xs);color:var(--meta);padding:var(--space-3) 0}
+
+.gap-item{
+  display:flex;align-items:center;gap:var(--space-3);
+  padding:var(--space-3) 0;border-bottom:1px solid var(--border-soft);
+  font-size:var(--text-sm);color:var(--fg-2);
+}
+.gap-item:last-child{border-bottom:0}
+.gap-tag{
+  flex:none;font-family:var(--font-mono);font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:var(--radius-sm);
+  background:var(--cap-l1-soft);color:var(--cap-l1-ink);
+}
+.gap-tag.t2{background:var(--cap-l2-soft);color:var(--cap-l2-ink)}
+.gap-tag.t3{background:var(--cap-l3-soft);color:var(--cap-l3-ink)}
+.gap-item .gn{color:var(--fg);font-weight:600;flex:1;min-width:0}
+.gap-item .gw{
+  flex:none;font-size:var(--text-xs);color:var(--meta);
+  font-variant-numeric:tabular-nums;
+}
+
+.path-item{padding:var(--space-3) 0;border-bottom:1px solid var(--border-soft)}
+.path-item:last-child{border-bottom:0}
+.path-item .pt{
+  display:flex;align-items:center;gap:var(--space-2);
+  font-size:var(--text-sm);font-weight:600;color:var(--fg);
+}
+.path-item .pt::before{content:"→";color:var(--accent);font-weight:700;flex:none}
+.path-item .pj{
+  font-size:var(--text-xs);color:var(--meta);margin-top:var(--space-1);
+  font-variant-numeric:tabular-nums;
+}
+.path-item .pa{font-size:var(--text-xs);color:var(--fg-2);margin-top:var(--space-1);line-height:1.55}
+.cap-note{font-size:var(--text-xs);color:var(--accent-ink)}
+
 /* ── 页脚 / 复制 / 吐司 ──────────────────────────────────────────── */
 footer{
   padding:var(--space-12) var(--container-gutter-desktop);
@@ -458,6 +600,7 @@ footer{
     --section-y-desktop:var(--section-y-tablet);
     --container-gutter-desktop:var(--container-gutter-tablet);
   }
+  .cap-grid{grid-template-columns:1fr}
 }
 @media(max-width:640px){
   :root{
@@ -489,6 +632,14 @@ footer{
   .timeline::before{background:#ccc}
   a{color:#000;text-decoration:none}
   .chip,.kw,.starchip,.langchip,.tagchip,.modechip,.pb-badge{border:1px solid #ddd}
+  /* 第 6 步：占比条是「数据编码」而非装饰，黑白打印丢色会让它变成空轨 */
+  .cap-card,.cap-col,.cap-verdict,.gap-item,.path-item{border-color:#ddd;background:#fff}
+  .cap-col{background:#fff;border:1px solid #ddd}
+  .cap-bar{border:1px solid #ccc}
+  .cap-seg{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .lv-dot{background:#fff;border:1px solid #999}
+  .lv-dot.on{background:#666;border-color:#666;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cap-scope,.gap-tag,.cap-card .ct .hit{border:1px solid #ddd}
 }
 </style>
 </head>
@@ -497,16 +648,16 @@ footer{
 <header class="hero">
   <div class="hero-inner">
     <div class="badge"><span class="dot"></span> 人文社科 · 岗位匹配已检索</div>
-    <h1>简历蜕变五步法 · 演示样例</h1>
-    <p class="sub">本文件由 render.py 用样例数据生成，用于预览三套设计系统与验证渲染链路。</p>
-    <div class="hero-stats"><div class="stat"><div class="n">2</div><div class="l">目标岗位</div></div><div class="stat"><div class="n">5</div><div class="l">蜕变步骤</div></div></div>
+    <h1>简历蜕变六步法 · 演示样例</h1>
+    <p class="sub">本文件是 render.py 的可运行样例数据，仅用于验证链路与预览渲染效果，内容为演示用途。</p>
+    <div class="hero-stats"><div class="stat"><div class="n">2</div><div class="l">目标岗位</div></div><div class="stat"><div class="n">6</div><div class="l">蜕变步骤</div></div></div>
   </div>
 </header>
 
 <nav class="navbar">
   <div class="nav-inner">
-    <div class="brandmark">简历蜕变 <span>×</span> 五步法</div>
-    <a class="navlink" href="#step1">① 岗位定锚</a><a class="navlink" href="#step2">② 定制简历</a><a class="navlink" href="#step3">③ 项目成果</a><a class="navlink" href="#step4">④ 二创指引</a><a class="navlink" href="#step5">⑤ 蜕变路线</a>
+    <div class="brandmark">简历蜕变 <span>×</span> 六步法</div>
+    <a class="navlink" href="#step1">① 岗位定锚</a><a class="navlink" href="#step2">② 定制简历</a><a class="navlink" href="#step3">③ 项目成果</a><a class="navlink" href="#step4">④ 二创指引</a><a class="navlink" href="#step5">⑤ 蜕变路线</a><a class="navlink" href="#step6">⑥ 能力迁移</a>
   </div>
 </nav>
 
@@ -517,7 +668,7 @@ footer{
       <div class="sec-num">◎</div>
       <div>
         <h2>选择你要主攻的岗位</h2>
-        <p>切换岗位后，下面各步（JD / 简历 / 项目 / 二创）的内容会联动更新。</p>
+        <p>切换岗位后，下面各步（JD / 简历 / 项目 / 二创 / 能力）的内容会联动更新。</p>
       </div>
     </div>
     <div class="tabs" id="jobTabs"></div>
@@ -603,6 +754,38 @@ footer{
     </div>
   </section>
 
+  <section class="block" id="step6">
+    <div class="sec-head">
+      <div class="sec-num">6</div>
+      <div><h2>能力迁移矩阵 · 垂类 / 通用 / 跨类三层</h2>
+      <p>作品集与调研报告是最容易被低估的可迁移证据——先看 L2 命中率。</p></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="ic blue">层</span>能力结构占比（按熟练度加权）</div>
+      <div class="card-b">
+        <div class="cap-bar" id="capBar"></div>
+        <div class="cap-legend" id="capLegend"></div>
+      </div>
+    </div>
+    <div id="capVerdict"></div>
+    <div class="cap-grid" id="capGrid"></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-h"><span class="ic orange">缺</span>能力缺口（按权重排序）</div>
+        <div class="card-b" id="capGapBox"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="ic green">迁</span>迁移路径建议</div>
+        <div class="card-b" id="capPathBox"></div>
+      </div>
+    </div>
+    <div class="notice info"><span class="ni">ⓘ</span><div class="cap-note">
+      <b>L1</b> 换行业必须重新学语境才能用；<b>L2</b> 有可交付物、可被任意行业同口径验收；
+      <b>L3</b> 作用于能力本身的元能力。三层由 <b>capability_matrix.py</b> 确定性计算，
+      同族跨层按 0.6 折价——数字不是估的，改完自评请重跑脚本。
+    </div></div>
+  </section>
+
 </div>
 
 <footer>
@@ -613,10 +796,11 @@ footer{
 <div class="copied-toast" id="toast">已复制到剪贴板</div>
 
 <script>
-window.__JOBS__ = [{"id": "demo-sci-001", "idx": 1, "title": "AI 搜索 Agent 算法实习生", "company": "示例科技", "project": "大模型人才实习招聘", "city": "上海", "category": "研发 - 算法", "track": "sci", "direction": "agent", "directionLabel": "Agent / 搜索应用型", "url": "https://example.com/job/demo-sci-001", "source": "example.com", "fetchedAt": "2026-10-14", "jd": ["1、参与下一代搜索问答 Agent 的构建与迭代，负责检索增强生成链路的落地；", "2、搭建可复现的评测集，用数据驱动召回与重排序策略的优化。"], "req": ["1、2028 届及以后本科及以上学历在读，计算机、人工智能等相关专业；", "2、熟悉 RAG、向量检索与 Prompt Engineering，有 Python 工程能力；", "3、有大模型评测或 Agent 应用落地经验者优先。"], "keywords": ["RAG", "Agent架构", "Prompt Engineering", "Python", "向量检索", "Faiss", "重排序", "评测集", "LangChain", "BM25"], "resume": {"positioning": "定位：能落地 RAG+Agent 全链路、并用评测数字说话的算法实习生。", "summary": "[待补充] 人工智能专业在读（2028届），具备 RAG 检索链路与评测集搭建经验。", "skills": [{"k": "RAG / 检索", "v": "LangChain、Faiss 向量检索、BM25 混合召回【待补充：线上指标】", "hit": true}, {"k": "工程能力", "v": "Python、SQL、Git、Docker 基础", "hit": true}, {"k": "模型评测", "v": "[待补充：评测集规模与结论]"}], "projects": [{"name": "【示例写法·待替换为你自己的项目】企业知识库 RAG 问答 Agent", "star": "S 级（技术栈：Python / LangChain / Faiss）", "body": "背景：内部文档检索依赖关键词匹配，长尾问题召回差。\n动作：实现混合召回 + 重排序 + 答案溯源，自建 200 题评测集。\n结果：[待补充：准确率 X%→Y%，响应耗时 Z ms]"}], "match": [["熟悉 RAG / 向量检索", "技能栏第 1 项 + RAG 问答 Agent 项目"], ["可复现的评测能力", "[待补充]：评测集题目数、指标口径与复现脚本链接"], ["Agent 应用落地经验", "[待补充]：若有 Agent 工作流项目请单独列出"]]}, "build": [{"p": "P0", "t": "端到端 RAG + Agent 问答系统（可开源）", "d": "含混合召回、重排序、溯源与评测集。验收：自建评测集上有可复现的准确率数字。"}, {"p": "P1", "t": "检索策略消融实验报告", "d": "对比 BM25 / 向量 / 混合召回三组结果。验收：结论可复现，附实验脚本。"}], "repos": [{"name": "infiniflow/ragflow", "star": "示例数值", "lang": "Go/Python", "tag": "RAG+Agent 引擎", "why": "完整覆盖检索到生成链路，适合做增量改造的基座。", "fork": ["为其接入自定义混合召回策略并做消融对比", "补充一份可复现的评测集与脚本"], "mode": "C", "accept": "改造有可复现结论，或 PR 被合并"}]}, {"id": "demo-art-002", "idx": 2, "title": "新媒体运营实习生", "company": "示例文化", "project": "内容运营实习招聘", "city": "北京", "category": "市场 - 内容", "track": "art", "direction": "content", "directionLabel": "内容 / 运营型", "url": "https://example.com/job/demo-art-002", "source": "example.com", "fetchedAt": "2026-10-14", "jd": ["1、负责公众号日常内容策划与撰写，参与选题会并输出选题方案；", "2、跟进内容分发效果，输出数据复盘报告。"], "req": ["1、本科在读，中文、新闻、传播等相关专业优先；", "2、有独立完成图文内容从选题到分发的经验；", "3、具备基础数据分析意识者优先。"], "keywords": ["内容策划", "公众号", "选题", "数据复盘", "图文写作", "分发渠道", "用户增长", "排版工具", "传播数据", "内容矩阵"], "resume": {"positioning": "定位：能独立完成从选题到分发、并用真实传播数据说话的运营实习生。", "summary": "[待补充] 新闻学在读（2028届），有校园媒体内容生产与分发经验。", "skills": [{"k": "内容生产", "v": "选题策划、长文写作、多平台改写【待补充：代表作链接】", "hit": true}, {"k": "数据复盘", "v": "[待补充：阅读量 / 转发数 / 涨粉数]"}], "projects": [{"name": "【示例写法】校园人物专栏", "star": "作品集（工具：公众号 / 秀米）", "body": "背景：校园媒体缺少稳定栏目，内容零散。\n动作：策划并主笔人物专栏，固定更新节奏与视觉规范。\n结果：[待补充：篇数 / 阅读量 / 转载数]"}], "match": [["内容策划与撰写", "校园人物专栏 + 技能栏第 1 项"], ["数据复盘能力", "[待补充]：附一份内容数据复盘报告"]]}, "build": [{"p": "P0", "t": "上线个人作品集站点", "d": "验收：有线上链接，含 5 篇代表作与每篇的真实传播数据。"}], "repos": []}];
+window.__JOBS__ = [{"id": "demo-sci-001", "idx": 1, "title": "AI 搜索 Agent 算法实习生", "company": "示例科技", "project": "大模型人才实习招聘", "city": "上海", "category": "研发 - 算法", "track": "sci", "direction": "agent", "directionLabel": "Agent / 搜索应用型", "url": "https://example.com/job/demo-sci-001", "source": "example.com", "fetchedAt": "2026-10-14", "jd": ["1、参与下一代搜索问答 Agent 的构建与迭代，负责检索增强生成链路的落地；", "2、搭建可复现的评测集，用数据驱动召回与重排序策略的优化。"], "req": ["1、2028 届及以后本科及以上学历在读，计算机、人工智能等相关专业；", "2、熟悉 RAG、向量检索与 Prompt Engineering，有 Python 工程能力；", "3、有大模型评测或 Agent 应用落地经验者优先。"], "keywords": ["RAG", "Agent架构", "Prompt Engineering", "Python", "向量检索", "Faiss", "重排序", "评测集", "LangChain", "BM25"], "resume": {"positioning": "定位：能落地 RAG+Agent 全链路、并用评测数字说话的算法实习生。", "summary": "[待补充] 人工智能专业在读（2028届），具备 RAG 检索链路与评测集搭建经验。", "skills": [{"k": "RAG / 检索", "v": "LangChain、Faiss 向量检索、BM25 混合召回【待补充：线上指标】", "hit": true}, {"k": "工程能力", "v": "Python、SQL、Git、Docker 基础", "hit": true}, {"k": "模型评测", "v": "[待补充：评测集规模与结论]"}], "projects": [{"name": "【示例写法·待替换为你自己的项目】企业知识库 RAG 问答 Agent", "star": "S 级（技术栈：Python / LangChain / Faiss）", "body": "背景：内部文档检索依赖关键词匹配，长尾问题召回差。\n动作：实现混合召回 + 重排序 + 答案溯源，自建 200 题评测集。\n结果：[待补充：准确率 X%→Y%，响应耗时 Z ms]"}], "match": [["熟悉 RAG / 向量检索", "技能栏第 1 项 + RAG 问答 Agent 项目"], ["可复现的评测能力", "[待补充]：评测集题目数、指标口径与复现脚本链接"], ["Agent 应用落地经验", "[待补充]：若有 Agent 工作流项目请单独列出"]]}, "build": [{"p": "P0", "t": "端到端 RAG + Agent 问答系统（可开源）", "d": "含混合召回、重排序、溯源与评测集。验收：自建评测集上有可复现的准确率数字。"}, {"p": "P1", "t": "检索策略消融实验报告", "d": "对比 BM25 / 向量 / 混合召回三组结果。验收：结论可复现，附实验脚本。"}], "repos": [{"name": "infiniflow/ragflow", "star": "示例数值", "lang": "Go/Python", "tag": "RAG+Agent 引擎", "why": "完整覆盖检索到生成链路，适合做增量改造的基座。", "fork": ["为其接入自定义混合召回策略并做消融对比", "补充一份可复现的评测集与脚本"], "mode": "C", "accept": "改造有可复现结论，或 PR 被合并"}], "capabilities": {"must": [{"id": "L1-TECH-BUILD", "name": "检索链路工程落地", "tier": "L1", "cat": "tech", "lv": 2, "w": 3}, {"id": "L2-DATA-LITERACY", "name": "评测指标设计", "tier": "L2", "cat": "data", "lv": 2, "w": 3}, {"id": "L1-RESEARCH-DESIGN", "name": "实验设计与消融", "tier": "L1", "cat": "research", "lv": 2, "w": 1}], "plus": [{"id": "L2-WRITTEN-EXPR", "name": "技术文档写作", "tier": "L2", "cat": "content", "lv": 2, "w": 1}, {"id": "L3-JOB-DECONSTRUCT", "name": "岗位要求拆解", "tier": "L3", "cat": "meta", "lv": 2, "w": 1}]}, "matrix": {"jobId": "demo-sci-001", "jobTitle": "AI 搜索 Agent 算法实习生", "score": 88, "coverage": 80, "migrateRate": 0, "scene": {"code": "A", "label": "垂类精准求职", "hint": "加深 L1、用深度做差异化；简历主打垂类成果", "reason": "匹配度 88 ≥ 72，L1 命中 75 ≥ 65"}, "tiers": {"L1": {"hit": 75, "req": 2, "ok": 1, "gap": 1, "weight": 0.5}, "L2": {"hit": 100, "req": 2, "ok": 2, "gap": 0, "weight": 0.3}, "L3": {"hit": 100, "req": 1, "ok": 1, "gap": 0, "weight": 0.2}}, "share": {"L1": 14, "L2": 72, "L3": 14}, "columns": {"L1": [{"id": "L1-TECH-BUILD", "name": "技术方案落地", "def": "把模糊需求转为可运行系统，并对延迟、可用性、成本等工程指标负责", "lv": 2, "scope": ["互联网"], "evidence": "课程项目：实现 RAG 问答 Demo，完成混合召回与答案溯源。[待补充：线上 QPS 与 P99 延迟]", "hit": true}, {"id": "L1-DATA-MODEL", "name": "数据建模与指标口径", "def": "定义业务指标口径、维度模型与可复现的数据链路", "lv": 1, "scope": ["互联网"], "evidence": "[待补充：是否独立设计过维度模型或指标字典]", "hit": false}], "L2": [{"id": "L2-DATA-LITERACY", "name": "数据素养与指标解读", "def": "读得懂数据、算得对指标、说得清结论的边界", "lv": 3, "scope": ["互联网", "零售", "教育"], "evidence": "用 SQL 完成 12 万条订单的漏斗分析，识别出新签增长掩盖了流失率翻倍的假性增长", "hit": true}, {"id": "L2-LEARNING", "name": "快速学习与技术迁移", "def": "在有限时间内掌握陌生领域的够用知识并投入使用", "lv": 3, "scope": ["互联网", "制造"], "evidence": "两周内从零掌握 Faiss 与 BM25 混合召回并交付可运行 Demo，返工 1 次", "hit": false}, {"id": "L2-STRUCT-PROBLEM", "name": "结构化问题拆解", "def": "把模糊问题拆成可验证的假设与可执行的动作", "lv": 3, "scope": ["互联网", "教育"], "evidence": "把「续费率下滑」拆成班型、时段、教师三支，定位到排课时段与家长工作时间冲突，而非教学质量", "hit": false}, {"id": "L2-PROJECT-DELIVERY", "name": "项目推进与交付", "def": "在范围、时间、资源约束下把事推到交付", "lv": 2, "scope": ["互联网"], "evidence": "主导 3 人课程项目，按里程碑交付，评审一次通过", "hit": false}, {"id": "L2-STAKEHOLDER", "name": "跨部门沟通与干系人管理", "def": "识别利益相关方、对齐预期、收敛分歧", "lv": 2, "scope": ["教育"], "evidence": "主导 6 次小组评审，把 9 项分歧收敛为 3 项决议，讨论周期由 3 天压缩至 1 天", "hit": false}, {"id": "L2-WRITTEN-EXPR", "name": "书面表达与文档工程", "def": "产出结构清晰、可被他人直接使用的文档", "lv": 2, "scope": ["互联网"], "evidence": "技术博客 12 篇，把踩坑过程写成可复现的排错步骤。[待补充：阅读量与被引用情况]", "hit": true}], "L3": [{"id": "L3-JOB-DECONSTRUCT", "name": "岗位能力拆解", "def": "把一份 JD 拆成带层级与权重的能力要求清单", "lv": 2, "scope": ["互联网"], "evidence": "拆过 10 份 JD，能指出至少 1 条「JD 没写但实际必需」的能力", "hit": true}, {"id": "L3-CAP-MATRIX", "name": "能力矩阵自评", "def": "说清自己每项能力的层级、熟练度与证据", "lv": 1, "scope": ["互联网"], "evidence": "[待补充：对每项能力说出 lv 依据，并给出缺口排序]", "hit": false}]}, "hit": [{"id": "L1-TECH-BUILD", "name": "检索链路工程落地", "tier": "L1", "ratio": 1.0}, {"id": "L2-DATA-LITERACY", "name": "评测指标设计", "tier": "L2", "ratio": 1.0}, {"id": "L2-WRITTEN-EXPR", "name": "技术文档写作", "tier": "L2", "ratio": 1.0}, {"id": "L3-JOB-DECONSTRUCT", "name": "岗位要求拆解", "tier": "L3", "ratio": 1.0}], "transfer": [], "gap": [{"id": "L1-RESEARCH-DESIGN", "name": "实验设计与消融", "tier": "L1", "need": 2, "have": 0, "w": 1, "weeks": 6, "lever": "无同族底座，需从零建立"}], "paths": [{"title": "简历主打 L1 垂类专属", "from": "L1 命中 75", "to": "垂类精准求职", "action": "把 L1 的深度证据前置到摘要与首屏；L2 只保留能自证的条目，不堆砌", "weeks": 1}, {"title": "最小补齐 · 实验设计与消融", "from": "现 lv0", "to": "需 lv2", "action": "在现岗位内主动承接一次该类任务，把过程留成可量化结果", "weeks": 6}], "source": {"profileHash": "0b32ace8", "catalogVersion": "1.0"}}}, {"id": "demo-art-002", "idx": 2, "title": "新媒体运营实习生", "company": "示例文化", "project": "内容运营实习招聘", "city": "北京", "category": "市场 - 内容", "track": "art", "direction": "content", "directionLabel": "内容 / 运营型", "url": "https://example.com/job/demo-art-002", "source": "example.com", "fetchedAt": "2026-10-14", "jd": ["1、负责公众号日常内容策划与撰写，参与选题会并输出选题方案；", "2、跟进内容分发效果，输出数据复盘报告。"], "req": ["1、本科在读，中文、新闻、传播等相关专业优先；", "2、有独立完成图文内容从选题到分发的经验；", "3、具备基础数据分析意识者优先。"], "keywords": ["内容策划", "公众号", "选题", "数据复盘", "图文写作", "分发渠道", "用户增长", "排版工具", "传播数据", "内容矩阵"], "resume": {"positioning": "定位：能独立完成从选题到分发、并用真实传播数据说话的运营实习生。", "summary": "[待补充] 新闻学在读（2028届），有校园媒体内容生产与分发经验。", "skills": [{"k": "内容生产", "v": "选题策划、长文写作、多平台改写【待补充：代表作链接】", "hit": true}, {"k": "数据复盘", "v": "[待补充：阅读量 / 转发数 / 涨粉数]"}], "projects": [{"name": "【示例写法】校园人物专栏", "star": "作品集（工具：公众号 / 秀米）", "body": "背景：校园媒体缺少稳定栏目，内容零散。\n动作：策划并主笔人物专栏，固定更新节奏与视觉规范。\n结果：[待补充：篇数 / 阅读量 / 转载数]"}], "match": [["内容策划与撰写", "校园人物专栏 + 技能栏第 1 项"], ["数据复盘能力", "[待补充]：附一份内容数据复盘报告"]]}, "build": [{"p": "P0", "t": "上线个人作品集站点", "d": "验收：有线上链接，含 5 篇代表作与每篇的真实传播数据。"}], "repos": [], "capabilities": {"must": [{"id": "L1-CONTENT-PROD", "name": "图文内容生产", "tier": "L1", "cat": "content", "lv": 3, "w": 3}, {"id": "L1-RESEARCH-DESIGN", "name": "选题调研与用户访谈", "tier": "L1", "cat": "research", "lv": 2, "w": 2}, {"id": "L2-DATA-LITERACY", "name": "传播数据复盘", "tier": "L2", "cat": "data", "lv": 2, "w": 2}, {"id": "L2-STAKEHOLDER", "name": "跨部门协作", "tier": "L2", "cat": "people", "lv": 2, "w": 2}], "plus": [{"id": "L3-EXP-REWRITE", "name": "经历迁移改写", "tier": "L3", "cat": "meta", "lv": 2, "w": 1}]}, "matrix": {"jobId": "demo-art-002", "jobTitle": "新媒体运营实习生", "score": 42, "coverage": 60, "migrateRate": 20, "scene": {"code": "C", "label": "跨行业转型", "hint": "走跳板岗位；简历主打能力等价物，弱化行业标签", "reason": "L1 命中 25 < 45，L2 命中 100 ≥ 50：雇主实际在按通用能力评估你（迁移率 20% 佐证）"}, "tiers": {"L1": {"hit": 25, "req": 2, "ok": 1, "gap": 1, "weight": 0.5}, "L2": {"hit": 100, "req": 2, "ok": 2, "gap": 0, "weight": 0.3}, "L3": {"hit": 0, "req": 1, "ok": 0, "gap": 1, "weight": 0.2}}, "share": {"L1": 14, "L2": 72, "L3": 14}, "columns": {"L1": [{"id": "L1-TECH-BUILD", "name": "技术方案落地", "def": "把模糊需求转为可运行系统，并对延迟、可用性、成本等工程指标负责", "lv": 2, "scope": ["互联网"], "evidence": "课程项目：实现 RAG 问答 Demo，完成混合召回与答案溯源。[待补充：线上 QPS 与 P99 延迟]", "hit": false}, {"id": "L1-DATA-MODEL", "name": "数据建模与指标口径", "def": "定义业务指标口径、维度模型与可复现的数据链路", "lv": 1, "scope": ["互联网"], "evidence": "[待补充：是否独立设计过维度模型或指标字典]", "hit": false}], "L2": [{"id": "L2-DATA-LITERACY", "name": "数据素养与指标解读", "def": "读得懂数据、算得对指标、说得清结论的边界", "lv": 3, "scope": ["互联网", "零售", "教育"], "evidence": "用 SQL 完成 12 万条订单的漏斗分析，识别出新签增长掩盖了流失率翻倍的假性增长", "hit": true}, {"id": "L2-LEARNING", "name": "快速学习与技术迁移", "def": "在有限时间内掌握陌生领域的够用知识并投入使用", "lv": 3, "scope": ["互联网", "制造"], "evidence": "两周内从零掌握 Faiss 与 BM25 混合召回并交付可运行 Demo，返工 1 次", "hit": false}, {"id": "L2-STRUCT-PROBLEM", "name": "结构化问题拆解", "def": "把模糊问题拆成可验证的假设与可执行的动作", "lv": 3, "scope": ["互联网", "教育"], "evidence": "把「续费率下滑」拆成班型、时段、教师三支，定位到排课时段与家长工作时间冲突，而非教学质量", "hit": false}, {"id": "L2-PROJECT-DELIVERY", "name": "项目推进与交付", "def": "在范围、时间、资源约束下把事推到交付", "lv": 2, "scope": ["互联网"], "evidence": "主导 3 人课程项目，按里程碑交付，评审一次通过", "hit": false}, {"id": "L2-STAKEHOLDER", "name": "跨部门沟通与干系人管理", "def": "识别利益相关方、对齐预期、收敛分歧", "lv": 2, "scope": ["教育"], "evidence": "主导 6 次小组评审，把 9 项分歧收敛为 3 项决议，讨论周期由 3 天压缩至 1 天", "hit": true}, {"id": "L2-WRITTEN-EXPR", "name": "书面表达与文档工程", "def": "产出结构清晰、可被他人直接使用的文档", "lv": 2, "scope": ["互联网"], "evidence": "技术博客 12 篇，把踩坑过程写成可复现的排错步骤。[待补充：阅读量与被引用情况]", "hit": false}], "L3": [{"id": "L3-JOB-DECONSTRUCT", "name": "岗位能力拆解", "def": "把一份 JD 拆成带层级与权重的能力要求清单", "lv": 2, "scope": ["互联网"], "evidence": "拆过 10 份 JD，能指出至少 1 条「JD 没写但实际必需」的能力", "hit": false}, {"id": "L3-CAP-MATRIX", "name": "能力矩阵自评", "def": "说清自己每项能力的层级、熟练度与证据", "lv": 1, "scope": ["互联网"], "evidence": "[待补充：对每项能力说出 lv 依据，并给出缺口排序]", "hit": false}]}, "hit": [{"id": "L2-DATA-LITERACY", "name": "传播数据复盘", "tier": "L2", "ratio": 1.0}, {"id": "L2-STAKEHOLDER", "name": "跨部门协作", "tier": "L2", "ratio": 1.0}], "transfer": [{"from": "书面表达与文档工程", "to": "图文内容生产", "tier": "L1", "ratio": 0.42}], "gap": [{"id": "L1-RESEARCH-DESIGN", "name": "选题调研与用户访谈", "tier": "L1", "need": 2, "have": 0, "w": 2, "weeks": 6, "lever": "无同族底座，需从零建立"}, {"id": "L3-EXP-REWRITE", "name": "经历迁移改写", "tier": "L3", "need": 2, "have": 0, "w": 1, "weeks": 6, "lever": "无同族底座，需从零建立"}], "paths": [{"title": "以同族能力为跳板", "from": "书面表达与文档工程", "to": "图文内容生产", "action": "把「书面表达与文档工程」的经验显式改写为「图文内容生产」的语言，在简历中并列呈现，使跨层折价从 60% 收窄", "weeks": 3}, {"title": "简历主打 L2 非垂类通用", "from": "L2 命中 100", "to": "跨行业转型", "action": "把 L2 的可交付物前置，并把 L1 经历改写成目标行业能读懂的语言", "weeks": 1}, {"title": "最小补齐 · 选题调研与用户访谈", "from": "现 lv0", "to": "需 lv2", "action": "在现岗位内主动承接一次该类任务，把过程留成可量化结果", "weeks": 6}], "source": {"profileHash": "0b32ace8", "catalogVersion": "1.0"}}}];
 window.__GLOBAL__ = {"roadmap": [{"phase": "第 1-2 周", "title": "定位与地基", "items": ["锁定 3-5 个目标岗位", "把现有经历按 JD 关键词重排"]}, {"phase": "第 3-6 周", "title": "补齐证据", "items": ["完成 P0 项目并产出可验证结果", "把 [待补充] 逐条回填为真实数字"]}, {"phase": "第 7-12 周", "title": "投递与迭代", "items": ["一岗一版投递", "按面试反馈迭代简历表达"]}], "checklist": ["每条经历都有**可验证的量化结果**，没有就写 [待补充]", "简历前 1/3 屏必须出现 JD 高频关键词", "所有项目都写明**验收标准**"], "strategy": [{"t": "一岗一版", "d": "不要用一份简历投所有岗位，按 JD 关键词重排顺序与详略。"}, {"t": "证据优先", "d": "JD 要求逐条对应到你的证据，写不出证据的进缺口清单。"}]};
 window.__NO_REPO__ = false;
-window.__CHK_KEY__ = "jt_chk_39851145";
+window.__HAS_CAP__ = true;
+window.__CHK_KEY__ = "jt_chk_65a4283c";
 </script>
 <script>
 (function(){
@@ -823,14 +1007,138 @@ window.__CHK_KEY__ = "jt_chk_39851145";
     document.body.removeChild(ta); done();
   }
 
+  // ── 第 6 步：能力迁移矩阵 ──────────────────────────────────────────
+  // 数据全部来自 j.matrix（capability_matrix.py 生成），这里只做模板拼装。
+  // 刻意不在 JS 里做任何算术：两份实现必然漂移，而「同一输入同一份额」是本 skill 的信任前提。
+  const TIER_NAME = {L1:'垂类专属', L2:'非垂类通用', L3:'跨类迁移'};
+  const TIERS = ['L1','L2','L3'];
+
+  function renderStep6(){
+    if(!window.__HAS_CAP__) return;
+    const j = JOBS()[cur] || {};
+    const m = j.matrix;
+    const bar = document.getElementById('capBar');
+    const legend = document.getElementById('capLegend');
+    const verdict = document.getElementById('capVerdict');
+    const grid = document.getElementById('capGrid');
+    const gapBox = document.getElementById('capGapBox');
+    const pathBox = document.getElementById('capPathBox');
+    if(!grid) return;
+
+    const barCard  = bar  ? bar.closest('.card')  : null;
+    const gapCard  = gapBox  ? gapBox.closest('.card')  : null;
+    const pathCard = pathBox ? pathBox.closest('.card') : null;
+    const pair = (gapCard && gapCard.parentNode) || null;   // .two-col
+    const show = (el, on) => { if(el) el.style.display = on ? '' : 'none'; };
+
+    // 该岗位没做能力拆解 / 还没跑脚本 → 只留一条说明，不摆空壳
+    if(!m || m.skipped){
+      const why = (m && m.reason) ? m.reason
+        : '该岗位尚未生成能力矩阵，请先运行 capability_matrix.py --merge 重算。';
+      show(barCard, false); show(grid, false); show(pair, false);
+      if(legend) legend.innerHTML = '';
+      if(verdict){
+        verdict.innerHTML = '<div class="notice info"><span class="ni">ℹ</span><div>' +
+          esc(why) + '</div></div>';
+      }
+      return;
+    }
+    show(grid, true); show(pair, true);
+
+    // ① 三层占比条（按熟练度加权，脚本已保证三项和为 100）
+    const share = m.share || {};
+    const shareSum = (share.L1||0) + (share.L2||0) + (share.L3||0);
+    show(barCard, shareSum > 0);
+    if(bar && shareSum > 0){
+      bar.innerHTML = TIERS.map((k,i) => {
+        const w = share[k] || 0;
+        if(!w) return '';
+        return '<div class="cap-seg l'+(i+1)+'" style="width:'+w+'%" title="'+
+          TIER_NAME[k]+' '+w+'%"></div>';
+      }).join('');
+    }
+    if(legend){
+      legend.innerHTML = TIERS.map((k,i) => {
+        const t = (m.tiers||{})[k] || {};
+        const hit = (t.hit === null || t.hit === undefined) ? '—' : (t.hit + '%');
+        return '<span class="cap-key l'+(i+1)+'"><b>'+k+'</b> '+TIER_NAME[k]+
+          ' <span class="ch">'+(share[k]||0)+'% · 命中 '+hit+' · '+(t.req||0)+' 项</span></span>';
+      }).join('');
+    }
+
+    // ② 场景结论
+    if(verdict){
+      const s = m.scene || {};
+      const num = v => (v === null || v === undefined) ? '—' : v;
+      verdict.innerHTML = '<div class="cap-verdict">' +
+        '<span class="cv-code">'+esc(s.code||'—')+'</span>' +
+        '<span class="cv-label">'+esc(s.label||'')+'</span>' +
+        '<span class="cv-stat">匹配度 '+num(m.score)+' · 覆盖 '+num(m.coverage)+
+          '% · 迁移 '+num(m.migrateRate)+'%</span>' +
+        '<span class="cv-hint">'+esc(s.hint||'')+'</span>' +
+        '<span class="cv-reason">'+esc(s.reason||'')+'</span>' +
+        '</div>';
+    }
+
+    // ③ 三列能力卡
+    const cols = m.columns || {};
+    grid.innerHTML = TIERS.map((k,i) => {
+      const rows = cols[k] || [];
+      const head = '<div class="cap-col-h"><span class="cl">'+k+'</span>'+
+        TIER_NAME[k]+'<span class="cn">'+rows.length+' 项</span></div>';
+      const body = rows.length ? rows.map(c => {
+        const lv = Math.max(0, Math.min(4, parseInt(c.lv,10) || 0));
+        const dots = [0,1,2,3].map(n =>
+          '<span class="lv-dot'+(n < lv ? ' on' : '')+'"></span>').join('');
+        const scope = (c.scope||[]).map(x =>
+          '<span class="cap-scope">'+esc(x)+'</span>').join('');
+        return '<div class="cap-card">' +
+          '<div class="ct">'+esc(c.name)+(c.hit ? '<span class="hit">JD 命中</span>' : '')+'</div>' +
+          (c.def ? '<div class="cd">'+esc(c.def)+'</div>' : '') +
+          '<div class="cf"><span class="lv-dots" title="熟练度 '+lv+'/4">'+dots+'</span>'+scope+'</div>' +
+          (c.evidence ? '<div class="cap-ev">'+hl(c.evidence)+'</div>' : '') +
+        '</div>';
+      }).join('') : '<div class="cap-empty">— 该层暂无能力项</div>';
+      return '<div class="cap-col c'+(i+1)+'">'+head+body+'</div>';
+    }).join('');
+
+    // ④ 缺口（脚本已按 权重↓ / 层级↑ / id↑ 排好序）
+    if(gapBox){
+      const gs = m.gap || [];
+      gapBox.innerHTML = gs.length ? gs.map(g => {
+        const cls = g.tier === 'L2' ? ' t2' : (g.tier === 'L3' ? ' t3' : '');
+        return '<div class="gap-item"><span class="gap-tag'+cls+'">'+esc(g.tier)+'</span>' +
+          '<span class="gn">'+esc(g.name)+'</span>' +
+          '<span class="gw">需 '+g.need+' · 现 '+g.have+' · 约 '+g.weeks+' 周</span></div>';
+      }).join('') :
+        '<div class="notice info" style="margin-top:0"><span class="ni">✓</span>' +
+        '<div>当前岗位三层均已覆盖，无硬缺口。</div></div>';
+    }
+
+    // ⑤ 迁移路径
+    if(pathBox){
+      const ps = m.paths || [];
+      pathBox.innerHTML = ps.length ? ps.map(p =>
+        '<div class="path-item"><div class="pt">'+esc(p.title)+'</div>' +
+        '<div class="pj">'+esc(p.from||'')+' → '+esc(p.to||'')+
+          (p.weeks ? ' · 约 '+p.weeks+' 周' : '')+'</div>' +
+        '<div class="pa">'+esc(p.action||'')+'</div></div>').join('') :
+        '<div class="notice info" style="margin-top:0"><span class="ni">ℹ</span>' +
+        '<div>暂无路径建议。</div></div>';
+    }
+  }
+
   function switchJob(i){
     if(i < 0 || i >= JOBS().length) return;
     cur = i;
-    renderTabs(); renderStep1(); renderStep2(); renderStep3(); renderStep4();
+    // 第 6 步必须跟着切：三层命中率、缺口、路径都是逐岗位数据。
+    // 只挂 renderAll 会让缺口清单停留在上一个岗位——页面不报错，内容却是错的。
+    renderTabs(); renderStep1(); renderStep2(); renderStep3(); renderStep4(); renderStep6();
   }
 
   function renderAll(){
-    renderTabs(); renderStep1(); renderStep2(); renderStep3(); renderStep4(); renderStep5();
+    renderTabs(); renderStep1(); renderStep2(); renderStep3();
+    renderStep4(); renderStep5(); renderStep6();
   }
 
   // 暴露给内联 onclick（以及外部验证脚本）
@@ -838,8 +1146,8 @@ window.__CHK_KEY__ = "jt_chk_39851145";
   window.copyResume = copyResume;
   window.renderAll = renderAll;
 
-  // 导航高亮
-  const secs = ['step1','step2','step3','step4','step5'];
+  // 导航高亮（step6 不存在时 getElementById 返回 null，循环已安全跳过）
+  const secs = ['step1','step2','step3','step4','step5','step6'];
   window.addEventListener('scroll', () => {
     let active = '';
     secs.forEach(id => {

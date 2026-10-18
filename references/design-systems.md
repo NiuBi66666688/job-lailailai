@@ -30,6 +30,7 @@
 | 强调 | `--accent` `--accent-on` `--accent-hover` `--accent-active` `--accent-soft` `--accent-ink` |
 | 语义 | `--success` `--warn` `--danger`（各带 `-soft` / `-ink`） |
 | 优先级 | `--p0` `--p1` `--p2`（各带 `-soft` / `-ink`） |
+| 能力层级 | `--cap-l1` `--cap-l2` `--cap-l3`（各带 `-soft` / `-ink`）、`--cap-rail` |
 | 字体 | `--font-display` `--font-body` `--font-mono` |
 | 字号 | `--text-xs` … `--text-4xl` |
 | 行高/字距 | `--leading-body` `--leading-tight` `--tracking-display` |
@@ -42,13 +43,39 @@
 | 版心 | `--container-max` `--container-gutter-desktop/tablet/phone` |
 
 ### `-soft` 与 `-ink` 是什么
-
 上游 schema 只给实色。软底色（浅底徽章、提示条）与软底上的文字色是**派生**的：
 
 - `-soft`：角色色以 8% 混进主题 `--surface`，保证浅底与底色同源而不是各调各的。
 - `-ink`：角色色朝主题 `--fg` 混 35%。角色色直接当文字压在自身浅底上对比度不够
   （Vercel 的 `--warn` 是亮黄 #eab308，白字压上去几乎看不见），混向主题文字色
   等于在浅色主题里「压深」，且仍与主题同源。
+
+### 三层能力色为什么是「同色相三级明度」
+
+`--cap-l1` / `--cap-l2` / `--cap-l3` 不是三个语义色，而是 `--accent` 向 `--surface`
+按 **0 / 30% / 55%** 混出的三档明度：
+
+```python
+t["cap-l1"] = t["accent"]
+t["cap-l2"] = mix_oklab(t["accent"], surf, 0.30)
+t["cap-l3"] = mix_oklab(t["accent"], surf, 0.55)
+```
+
+原因有两条：
+
+1. **语义上，三层是同一光谱的三段**，不是三种无关类型。用三个语义色（比如蓝/橙/绿）
+   会让读者误以为它们是并列的三类东西；同色相递减才读得出「由深到浅、由专属到通用」。
+2. **不复用 `--p0`/`--p1`/`--p2`**。那三个 token 的语义是**项目优先级**，
+   拿来表示能力层级会造成跨组件语义污染——以后想调优先级配色，会顺手改坏第 6 步。
+
+代价是这三档必须**真的递减**，否则「深度」语义失效。`design_systems.py` 有一条自检
+直接断言三个轨道的 `lum(cap-l1) < lum(cap-l2) < lum(cap-l3)`：
+
+```
+sci: 0.181 < 0.343 < 0.527    art: 0.144 < 0.294 < 0.481    biz: 0.120 < 0.274 < 0.468
+```
+
+改混色比例后跑一次 `python scripts/design_systems.py` 就知道有没有破。
 
 ## 三、换主题 / 加主题
 

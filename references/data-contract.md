@@ -1,22 +1,24 @@
 # jobs.json 数据契约
 
 `scripts/render.py` 的唯一输入。阶段三产出此文件，阶段四消费它。
+`scripts/capability_matrix.py` 会向 `jobs[].matrix` 写入能力矩阵（阶段三之二）。
 
 ## 顶层结构
 
 ```json
 {
   "meta": {
-    "title": "从大三到字节 Seed — 简历蜕变五步法",
+    "title": "从大三到字节 Seed — 简历蜕变六步法",
     "subtitle": "已抓取 7 个实习岗位的完整职位描述与职位要求（官网原文）…",
     "track": "sci",
     "generatedAt": "2026-10-11",
     "company": "字节跳动 Seed",
+    "capabilityCatalog": "1.0",
     "linkLabel": "岗位数据来自公开招聘平台，抓取于 2026-10-11"
   },
   "stats": [
     { "n": "7", "l": "目标岗位" },
-    { "n": "5", "l": "蜕变步骤" }
+    { "n": "6", "l": "蜕变步骤" }
   ],
   "jobs": [ /* 见下 */ ],
   "global": {
@@ -76,9 +78,70 @@
       "tag": "RAG+Agent 引擎", "why": "…",
       "fork": ["为它接入你自己的混合召回策略并做消融", "…"],
       "mode": "C", "accept": "PR 被合并 或 消融实验有可复现结论" }
-  ]
+  ],
+
+  "capabilities": {
+    "must": [
+      { "id": "L1-TECH-BUILD", "name": "检索链路工程落地", "tier": "L1", "cat": "tech", "lv": 3, "w": 3 },
+      { "id": "L2-DATA-LITERACY", "name": "评测指标设计", "tier": "L2", "cat": "data", "lv": 2, "w": 3 }
+    ],
+    "plus": [
+      { "id": "L2-WRITTEN-EXPR", "name": "技术文档写作", "tier": "L2", "cat": "content", "lv": 2, "w": 1 }
+    ]
+  },
+
+  "matrix": { /* 由 capability_matrix.py 生成，禁止手写 */ }
 }
 ```
+
+### `capabilities` · 岗位能力要求（可选）
+
+缺省时不生成第 6 步，页面回落到五步版本。写了就必须按 `capability-tiers.md` 的判定树定级。
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `capabilities.must` | ✅ | 硬性要求，1–8 项。`w` 缺省 3 |
+| `capabilities.plus` | — | 加分项，`w` 缺省 1 |
+| `[].id` | ✅ | 取自 16 项目录；无法归类时用 `X-<slug>` |
+| `[].name` | ✅ | 该岗位语境下的中文名（可与目录名不同） |
+| `[].tier` | ✅ | `L1` / `L2` / `L3`，指**该岗位对这一能力的定位** |
+| `[].cat` | ✅ | 能力族：`tech data content research business compliance process people meta` |
+| `[].lv` | ✅ | 岗位要求熟练度 0–4 |
+| `[].w` | — | 权重 1–3：必须=3 / 优先=2 / 加分=1 |
+
+### `matrix` · 能力矩阵（**只允许脚本生成**）
+
+> ⚠️ **不要手写这个字段。** 它必须由 `scripts/capability_matrix.py --merge` 产出。
+> 手写会与 `profile.json` 的自评漂移，导致页面上的三层占比、缺口、路径互相矛盾。
+> 渲染层只校验形状（`share` 三项和为 100），不校验业务正确性——写错了不会报错，只会悄悄错。
+
+```bash
+python scripts/capability_matrix.py --profile profile.json --jobs jobs.json --merge --out jobs.json
+```
+
+产出结构（节选，完整见脚本 `analyze()` 的返回）：
+
+```json
+"matrix": {
+  "jobId": "A258400A", "jobTitle": "AI搜索Agent算法实习生",
+  "score": 68, "coverage": 83, "migrateRate": 17,
+  "scene": { "code": "B", "label": "非垂类宽泛择业", "hint": "…", "reason": "匹配度 68 ≥ 55…" },
+  "tiers": { "L1": { "hit": 55, "req": 4, "ok": 2, "gap": 2, "weight": 0.5 },
+             "L2": { "hit": 72, "req": 3, "ok": 2, "gap": 1, "weight": 0.3 },
+             "L3": { "hit": 40, "req": 1, "ok": 0, "gap": 1, "weight": 0.2 } },
+  "share": { "L1": 30, "L2": 50, "L3": 20 },
+  "columns": { "L1": [ { "id": "…", "name": "…", "def": "…", "lv": 2,
+                         "scope": ["互联网"], "evidence": "…", "hit": true } ],
+               "L2": [], "L3": [] },
+  "hit": [], "transfer": [], 
+  "gap": [ { "id": "…", "name": "…", "tier": "L1", "need": 3, "have": 0,
+             "w": 3, "weeks": 9, "lever": "无同族底座，需从零建立" } ],
+  "paths": [ { "title": "…", "from": "…", "to": "…", "action": "…", "weeks": 6 } ],
+  "source": { "profileHash": "9f2c1ab4", "catalogVersion": "1.0" }
+}
+```
+
+`source.profileHash` 与当前 profile 不符时，`render.py --selftest` 只给 WARN——说明自评改过但没重算，页面数字已过期。
 
 ## 字段规则
 
@@ -92,6 +155,54 @@
 | `jobs[].resume.match` | ✅ | `[[要求, 证据], …]`；证据含 `[待补充]` 时渲染成红色 |
 | `jobs[].build[].p` | ✅ | 仅 `P0`/`P1`/`P2` |
 | `jobs[].repos` | — | 为空时该岗位跳过第 4 步 |
+| `jobs[].major` / `grade` | — | 专业 / 届别，渲染进简历抬头；缺省显示 `[专业]` `[届别]` |
+| `jobs[].capabilities.must` | — | 缺省时该岗位跳过第 6 步（整页回落到五步版本） |
+| `jobs[].capabilities[].tier` | ✅ | 仅 `L1`/`L2`/`L3`，非法值渲染前报 ERROR |
+| `jobs[].capabilities[].lv` | ✅ | 0–4 整数；超出范围钳制并给 WARN |
+| `jobs[].capabilities[].w` | — | 1–3，缺省 2 |
+| `jobs[].matrix` | — | **只允许 `capability_matrix.py --merge` 生成**，禁止手写 |
+
+## profile.json 数据契约
+
+阶段一（含第 4 轮能力盘点）的产物，`capability_matrix.py` 的输入。与 `jobs.json` 分开存放。
+
+```json
+{
+  "track": "sci",
+  "intent": "broad",
+  "targetIndustry": "",
+  "capabilityMeta": {
+    "assessedAt": "2026-10-18",
+    "method": "self-report-4pt",
+    "catalogVersion": "1.0"
+  },
+  "capabilities": [
+    { "id": "L1-TECH-BUILD", "name": "技术方案落地", "tier": "L1", "cat": "tech",
+      "lv": 2, "scope": ["互联网"], "soft": false,
+      "evidence": "[待补充：上线服务与 QPS]" },
+    { "id": "L2-DATA-LITERACY", "name": "数据素养与指标解读", "tier": "L2", "cat": "data",
+      "lv": 3, "scope": ["互联网", "零售", "金融"], "soft": false,
+      "evidence": "课程项目：用 SQL 完成 12 万条订单的漏斗分析，定位第 3 天流失拐点" },
+    { "id": "L3-JOB-DECONSTRUCT", "name": "岗位能力拆解", "tier": "L3", "cat": "meta",
+      "lv": 2, "scope": ["互联网"], "soft": false,
+      "evidence": "拆过 10 份 JD，能指出 1 条「JD 没写但实际必需」的能力" }
+  ]
+}
+```
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `intent` | ✅ | `vertical`（只投本行业）/ `broad`（本行业为主、兼顾相邻）/ `switch`（明确跨行业转型）。驱动择业场景判定 |
+| `targetIndustry` | — | `intent=switch` 时必填，用于生成迁移路径文案 |
+| `capabilities` | ✅ | 5–16 项，且每层至少 1 项 |
+| `capabilities[].id` | ✅ | 取自 16 项目录；自定义用 `X-<slug>` |
+| `capabilities[].tier` | ✅ | 用户自评层级；被 Phase 3 校正后以校正值为准 |
+| `capabilities[].cat` | ✅ | 缺省按 `id` 查目录补齐 |
+| `capabilities[].lv` | ✅ | 0–4。**说不出依据的一律记 1**，不允许凭感觉给 3 |
+| `capabilities[].scope` | — | 该能力已应用的行业，至少 1 个；这是跨行业迁移的唯一实证 |
+| `capabilities[].evidence` | ✅ | 允许 `[待补充]`，但 `lv≥3` 时不允许为空占位 |
+| `capabilities[].soft` | — | 软能力标记。`true` 时证据必须走 `capability-tiers.md` 第四节的句式库 |
+| `capabilityMeta.method` | — | `self-report-4pt`（自评）/ `inferred`（从经历推断） |
 
 ## 占位符约定（render.py 自动处理）
 
@@ -125,7 +236,13 @@
       "match": [["内容策划与撰写", "校园人物专栏 + 技能栏第 1 项"]]
     },
     "build": [{ "p": "P0", "t": "上线个人作品集站点", "d": "验收：有线上链接，含 5 篇代表作" }],
-    "repos": []
+    "repos": [],
+    "capabilities": {
+      "must": [
+        { "id": "L1-CONTENT-PROD", "name": "图文内容生产", "tier": "L1", "cat": "content", "lv": 3, "w": 3 },
+        { "id": "L2-DATA-LITERACY", "name": "传播数据复盘", "tier": "L2", "cat": "data", "lv": 2, "w": 2 }
+      ]
+    }
   }],
   "global": {
     "roadmap": [{ "phase": "第 1-2 周", "title": "定位与地基", "items": ["…"] }],
@@ -138,9 +255,19 @@
 ## 自检
 
 ```bash
-python scripts/render.py --selftest jobs.json
+python scripts/render.py --selftest jobs.json      # 数据契约 + 占位符规范
+python scripts/capability_matrix.py --selftest     # 算分逻辑（11 条断言）
 ```
 
-会检查：meta/jobs 必填字段、`p` 取值合法性、`match` 二元组、
-`fork` 是否为空数组、keywords 数量、占位符写法是否规范。
-**有 ERROR 必须修完再渲染**；WARNING 可酌情忽略。
+`render.py --selftest` 会检查：meta/jobs 必填字段、`p` 取值合法性、`match` 二元组、
+`fork` 是否为空数组、keywords 数量、占位符写法是否规范、`capabilities` 的 tier/lv/w 枚举、
+`matrix.share` 三项和是否为 100。
+**有 ERROR 必须修完再渲染**；WARNING 可酌情忽略（例如 `profileHash` 不符，说明自评改过但没重算）。
+
+完整链路：
+
+```bash
+python scripts/capability_matrix.py --profile profile.json --jobs jobs.json --merge --out jobs.json
+python scripts/render.py --selftest jobs.json
+python scripts/render.py jobs.json out.html --theme sci
+```

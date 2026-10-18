@@ -316,6 +316,19 @@ def tokens_for(track):
     t["p0-ink"], t["p1-ink"], t["p2-ink"] = (
         t["danger-ink"], t["warn-ink"], t["accent-ink"])
 
+    # ── 派生：能力三层（L1/L2/L3）──────────────────────────────────────
+    # 三层不是三个类别，是同一能力谱系的三段深度。因此用**同一色相的三级明度**
+    # 表达「越靠 L1 越深」，而不是三个语义色——后者会被误读为三类互不相干的能力，
+    # 也违反「禁双品牌色」。也不复用 p0/p1/p2：那是项目优先级，语义会串味
+    # （且 p0=danger 会让「垂类深度」看起来像告警）。
+    t["cap-l1"] = t["accent"]
+    t["cap-l2"] = mix_oklab(t["accent"], surf, 0.30)
+    t["cap-l3"] = mix_oklab(t["accent"], surf, 0.55)
+    for k in ("cap-l1", "cap-l2", "cap-l3"):
+        t[f"{k}-soft"] = tint(t[k], 0.08, surf)
+        t[f"{k}-ink"] = mix_oklab(t[k], t["fg"], 0.35)
+    t["cap-rail"] = t["border"]
+
     # ── 派生：半透明表面（吸顶导航需要透出下层内容）──────────────────
     t["surface-translucent"] = rgba(t["surface"], 0.86)
 
@@ -359,6 +372,10 @@ def selftest():
         "p0", "p0-soft", "p1", "p1-soft", "p2", "p2-soft",
         "p0-ink", "p1-ink", "p2-ink",
         "mark-bg", "mark-line",
+        "cap-l1", "cap-l2", "cap-l3",
+        "cap-l1-soft", "cap-l2-soft", "cap-l3-soft",
+        "cap-l1-ink", "cap-l2-ink", "cap-l3-ink",
+        "cap-rail",
     ]
     for track in ("sci", "art", "biz"):
         t = tokens_for(track)
@@ -384,6 +401,16 @@ def selftest():
     got = shade("#ffffff", 50)
     checks.append(("shade(#ffffff,50) 落在中灰区间",
                    0x60 <= int(got[1:3], 16) <= 0xa0, f"得到 {got}"))
+
+    # 能力三层色阶：L1 最深 → L3 最浅，所以亮度必须严格递增（数字越大越亮）
+    ok_ramp, detail = True, []
+    for track in ("sci", "art", "biz"):
+        tk = tokens_for(track)
+        lums = [lum(tk[f"cap-l{i}"]) for i in (1, 2, 3)]
+        detail.append(f"{track}:{lums[0]:.3f}<{lums[1]:.3f}<{lums[2]:.3f}")
+        if not (lums[0] < lums[1] < lums[2]):
+            ok_ramp = False
+    checks.append(("能力三层色阶 L1→L3 亮度严格递增", ok_ramp, "  ".join(detail)))
 
     # 三个系统必须互不相同（避免复制粘贴错）
     slugs = {tokens_for(k)["_meta"]["slug"] for k in ("sci", "art", "biz")}

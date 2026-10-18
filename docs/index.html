@@ -41,14 +41,32 @@
   .card .s{font-size:12.5px;color:var(--muted);line-height:1.6}
   .card .s b{color:var(--fg-2);font-weight:600}
 
-  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px}
+  .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:4px}
   .step{background:var(--surface);border:1px solid var(--border);border-radius:8px;
-        padding:14px 13px 16px}
+        padding:14px 12px 16px}
   .step .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
            border:1px solid #d4d4d4;border-radius:4px;font-size:11px;font-weight:600;
            color:var(--fg-2);margin-bottom:10px}
-  .step .t{font-size:13.5px;font-weight:600;margin-bottom:5px}
-  .step .s{font-size:11.5px;color:var(--muted);line-height:1.55}
+  .step .t{font-size:13px;font-weight:600;margin-bottom:5px}
+  .step .s{font-size:11px;color:var(--muted);line-height:1.5}
+
+  /* 三级能力体系：同色相三级明度，与产物页面的 --cap-l1/2/3 保持一致 */
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px}
+  .tier{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+        padding:18px 18px 20px;border-top:3px solid var(--accent)}
+  .tier.l2{border-top-color:#619ffb}
+  .tier.l3{border-top-color:#9ac2ff}
+  .tier .k{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--accent);
+           letter-spacing:.04em;margin-bottom:8px}
+  .tier.l2 .k{color:#2b7fe0}
+  .tier.l3 .k{color:#4a90d9}
+  .tier .t{font-size:15px;font-weight:600;margin-bottom:6px}
+  .tier .s{font-size:12.5px;color:var(--muted);line-height:1.65}
+  .tier .s b{color:var(--fg-2);font-weight:600}
+  .rule{margin-top:20px;font-size:13px;color:var(--fg-2);line-height:1.9;
+        background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);
+        border-radius:8px;padding:16px 18px}
+  .rule b{color:var(--fg);font-weight:600}
 
   pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;
       padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;
@@ -68,6 +86,7 @@
     h1{font-size:29px}
     .grid{grid-template-columns:1fr}
     .steps{grid-template-columns:1fr 1fr}
+    .tiers{grid-template-columns:1fr}
     ul.links{grid-template-columns:1fr}
   }
 </style>
@@ -76,16 +95,18 @@
 
 <header>
   <div class="wrap">
-    <span class="tag">可移植 agent skill</span>
+    <span class="tag">可移植 agent skill · v2.0.0</span>
     <h1>求职简历蜕变引导</h1>
     <p class="sub">
       把<b>招聘网站的真实岗位 JD</b>，翻译成用户可执行的简历蜕变方案，
       最终产出一份单文件可视化 HTML 引导页。
+      三级能力体系还算清楚<b>哪些能力跨行业也值钱</b>。
     </p>
     <div class="meta">
       <span>Python <code>&gt;=3.8</code></span>
       <span>依赖 <code>零第三方</code></span>
       <span>许可 <code>Apache-2.0</code></span>
+      <span>流水线 <code>六步</code></span>
     </div>
   </div>
 </header>
@@ -121,13 +142,48 @@
 
 <section>
   <div class="wrap">
-    <h2>五步流水线</h2>
+    <h2>三级能力体系 · 按「谁在验收」分，不按熟练度分</h2>
+    <div class="tiers">
+      <div class="tier">
+        <div class="k">L1</div>
+        <div class="t">垂类专属</div>
+        <div class="s">验收方：<b>行业内的人</b><br>
+          技术方案落地 · 数据建模与指标口径 · 内容生产</div>
+      </div>
+      <div class="tier l2">
+        <div class="k">L2</div>
+        <div class="t">非垂类通用</div>
+        <div class="s">验收方：<b>通用管理标尺</b><br>
+          结构化问题拆解 · 项目推进 · 书面表达</div>
+      </div>
+      <div class="tier l3">
+        <div class="k">L3</div>
+        <div class="t">跨类迁移</div>
+        <div class="s">验收方：<b>求职者自己</b><br>
+          能力矩阵自评 · 岗位能力拆解 · 经历迁移改写</div>
+      </div>
+    </div>
+    <div class="rule">
+      判定只问一句：<b>这份证据的验收方是谁？</b><br>
+      <b>熟练度高 ≠ 层级高</b>——十年资深文案的内容能力仍是 L1；
+      「跨 3 个行业协调过团队」仍是 L2。<br>
+      <b>L3 不打折</b>——元能力没有相邻替代品，永远不适用迁移折价；
+      跨层同族能力按 <b>0.6</b> 折价计入迁移率。<br>
+      三种场景都能跑：<b>垂类精准求职</b> / <b>非垂类宽泛择业</b> / <b>跨行业转型</b>。
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>六步流水线</h2>
     <div class="steps">
-      <div class="step"><div class="n">1</div><div class="t">岗位定锚</div><div class="s">JD 原文与职位要求<br>关键词抽取</div></div>
+      <div class="step"><div class="n">1</div><div class="t">岗位定锚</div><div class="s">JD 原文与要求<br>关键词抽取</div></div>
       <div class="step"><div class="n">2</div><div class="t">定制简历</div><div class="s">命中优先级重排<br>要求→证据映射</div></div>
       <div class="step"><div class="n">3</div><div class="t">项目成果</div><div class="s">P0/P1/P2 清单<br>附验收标准</div></div>
       <div class="step"><div class="n">4</div><div class="t">二创来源</div><div class="s">按学科分流<br>开源/年报/作品集</div></div>
       <div class="step"><div class="n">5</div><div class="t">蜕变路线</div><div class="s">90 天时间轴<br>自检 + 投递策略</div></div>
+      <div class="step"><div class="n">6</div><div class="t">能力迁移</div><div class="s">三层占比/命中<br>缺口 + 跳板路径</div></div>
     </div>
   </div>
 </section>
@@ -146,8 +202,10 @@ python verify.py
 python scripts/install.py --detect
 python scripts/install.py --target all --link
 
-<span class="c"># 4) 直接生成一份引导页试试</span>
-python scripts/render.py examples/jobs.sample.json out.html --theme sci</pre>
+<span class="c"># 4) 算三级能力矩阵，再渲染一份引导页试试</span>
+python scripts/capability_matrix.py --profile examples/profile.sample.json \
+       --jobs examples/jobs.sample.json --merge --out /tmp/jobs.json
+python scripts/render.py /tmp/jobs.json out.html --theme sci</pre>
   </div>
 </section>
 
@@ -158,6 +216,7 @@ python scripts/render.py examples/jobs.sample.json out.html --theme sci</pre>
       <li><a href="https://github.com/NiuBi66666688/job-lailailai#readme">README · 使用说明</a></li>
       <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/docs/PUBLISH.md">PUBLISH · 发布上线指南</a></li>
       <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/SKILL.md">SKILL.md · 完整工作流</a></li>
+      <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/references/capability-tiers.md">三级能力体系 · 判定树与 16 项目录</a></li>
       <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/references/design-systems.md">设计系统与 token</a></li>
       <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/references/verify-render.md">渲染验证方法</a></li>
       <li><a href="https://github.com/NiuBi66666688/job-lailailai/blob/main/references/portability.md">跨平台兼容矩阵</a></li>

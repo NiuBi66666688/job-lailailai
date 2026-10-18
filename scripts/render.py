@@ -27,7 +27,12 @@ render.py — 求职简历蜕变引导页生成器
   python render.py jobs.json out.html --title "标题" --subtitle "副标题"
   python render.py jobs.json out.html --theme art      # sci|art|biz，默认按 meta.track
   python render.py jobs.json out.html --no-repo        # 跳过第 4 步
+  python render.py jobs.json out.html --no-cap         # 跳过第 6 步（强制五步版本）
   python render.py --selftest jobs.json                # 只校验数据
+
+六步流水线：① 岗位定锚 ② 定制简历 ③ 项目成果 ④ 二创来源 ⑤ 蜕变路线 ⑥ 能力迁移矩阵。
+第 6 步的数据来自 `capability_matrix.py --merge` 写入的 jobs[].matrix；
+岗位没有 capabilities 时该步整段不生成，页面自动回落到五步版本（老数据兼容）。
 """
 
 import argparse
@@ -51,18 +56,21 @@ THEMES = {
         "step4_title": "开源项目 · 二创指引",
         "step4_sub": "点击展开每个项目的「二创切入点」。",
         "step3_sub": "P0 = 必做（简历核心证据）；P1 = 加分；P2 = 差异化亮点。",
+        "step6_sub": "三层命中率按要求权重加权；跨层同族能力按 0.6 折价计入迁移。",
     },
     "art": {
         "label": "人文社科",
         "step4_title": "案例与素材 · 二创指引",
         "step4_sub": "点击展开每个案例的「二创切入点」。作品集与调研报告同样是硬证据。",
         "step3_sub": "P0 = 必做（作品集核心证据）；P1 = 加分；P2 = 差异化亮点。文科不必写代码。",
+        "step6_sub": "作品集与调研报告是最容易被低估的可迁移证据——先看 L2 命中率。",
     },
     "biz": {
         "label": "经管商科",
         "step4_title": "研报与案例 · 二创指引",
         "step4_sub": "点击展开每个来源的「二创切入点」。",
         "step3_sub": "P0 = 必做（简历核心证据）；P1 = 加分；P2 = 差异化亮点。",
+        "step6_sub": "商业分析属 L1，指标素养属 L2——转型时先把 L2 讲成硬贡献。",
     },
 }
 
@@ -71,6 +79,8 @@ THEMES = {
 # ----------------------------------------------------------------------------
 P_VALUES = {"P0", "P1", "P2"}
 TRACKS = set(THEMES)
+# 三级能力体系：与 capability_matrix.py 的 TIERS 保持一致
+TIERS = ("L1", "L2", "L3")
 
 
 def selftest(path):
@@ -178,6 +188,72 @@ def selftest(path):
                 if not isinstance(fk, list) or not fk:
                     errs.append(f"{tag}.repos[{k}].fork 必须是非空数组（要可执行的切入点）")
 
+        # ── 第 6 步：能力要求与能力矩阵 ──────────────────────────────────
+        caps = j.get("capabilities")
+        if caps is not None:
+            if not isinstance(caps, dict):
+                errs.append(f"{tag}.capabilities 必须是对象")
+            else:
+                must = caps.get("must")
+                if not isinstance(must, list) or not must:
+                    errs.append(f"{tag}.capabilities.must 必须是非空数组"
+                                f"（不打算做能力拆解就整段删掉）")
+                elif not (1 <= len(must) <= 8):
+                    warns.append(f"{tag}.capabilities.must 建议 1-8 项，当前 {len(must)} 项")
+                for key in ("must", "plus"):
+                    for k, c in enumerate(caps.get(key) or []):
+                        ct = f"{tag}.capabilities.{key}[{k}]"
+                        if not isinstance(c, dict):
+                            errs.append(f"{ct} 不是对象")
+                            continue
+                        if not c.get("id"):
+                            errs.append(f"{ct}.id 必填（取自 16 项目录，或 X-<slug>）")
+                        if not c.get("name"):
+                            errs.append(f"{ct}.name 必填")
+                        if c.get("tier") not in TIERS:
+                            errs.append(f"{ct}.tier 必须是 L1/L2/L3，当前 {c.get('tier')!r}")
+                        if not c.get("cat"):
+                            errs.append(f"{ct}.cat 必填（能力族，用于跨层迁移匹配）")
+                        lv = c.get("lv")
+                        if isinstance(lv, bool) or not isinstance(lv, int) or not (0 <= lv <= 4):
+                            errs.append(f"{ct}.lv 必须是 0-4 整数，当前 {lv!r}")
+                        w = c.get("w", 2)
+                        if isinstance(w, bool) or not isinstance(w, int) or not (1 <= w <= 3):
+                            errs.append(f"{ct}.w 必须是 1-3 整数，当前 {w!r}")
+
+        mtx = j.get("matrix")
+        if mtx is not None:
+            if not isinstance(mtx, dict):
+                errs.append(f"{tag}.matrix 必须是对象")
+            elif not mtx.get("skipped"):
+                for key in ("score", "coverage", "migrateRate"):
+                    v = mtx.get(key)
+                    if isinstance(v, bool) or not isinstance(v, int) or not (0 <= v <= 100):
+                        errs.append(f"{tag}.matrix.{key} 必须是 0-100 整数，当前 {v!r}")
+                sh = mtx.get("share")
+                if not isinstance(sh, dict) or not set(TIERS) <= set(sh):
+                    errs.append(f"{tag}.matrix.share 必须含 L1/L2/L3 三键")
+                else:
+                    total = sum(int(sh.get(t) or 0) for t in TIERS)
+                    if total not in (0, 100):
+                        errs.append(f"{tag}.matrix.share 三项之和应为 100，当前 {total}"
+                                    f"（全 0 表示没有能力项）")
+                if not isinstance(mtx.get("gap"), list):
+                    errs.append(f"{tag}.matrix.gap 必须是数组")
+                if not isinstance(mtx.get("paths"), list):
+                    errs.append(f"{tag}.matrix.paths 必须是数组")
+                cols = mtx.get("columns")
+                if not isinstance(cols, dict) or not set(TIERS) <= set(cols):
+                    errs.append(f"{tag}.matrix.columns 必须含 L1/L2/L3 三键")
+                scene = mtx.get("scene")
+                if not isinstance(scene, dict) or not scene.get("code"):
+                    errs.append(f"{tag}.matrix.scene 缺失或没有 code")
+        if caps and not mtx:
+            warns.append(f"{tag} 有 capabilities 但无 matrix：第 6 步将显示占位"
+                         f"（跑 capability_matrix.py --merge 生成）")
+        if mtx and not caps:
+            warns.append(f"{tag} 有 matrix 但无 capabilities：matrix 来源不明，建议重算")
+
     gl = data.get("global") or {}
     if not gl.get("roadmap"):
         warns.append("global.roadmap 为空，第 5 步将显示占位")
@@ -224,6 +300,15 @@ def json_for_script(obj):
     return (s.replace("</", "<\\/")
              .replace("\u2028", "\\u2028")
              .replace("\u2029", "\\u2029"))
+
+
+def chk_key(title, meta):
+    """自检表的 localStorage key。用 sha1 而非内置 hash()：
+    hash() 受 PYTHONHASHSEED 影响，同一份数据两次渲染会得到不同的 key，
+    导致重渲染后旧的勾选进度全部丢失、且产出文件无法逐字节比对。"""
+    import hashlib
+    seed = str(meta.get("station_id") or title or "")
+    return hashlib.sha1(seed.encode("utf-8")).hexdigest()[:8]
 
 
 # ----------------------------------------------------------------------------
@@ -592,6 +677,138 @@ td.ev{color:var(--fg-2)}
 .notice.info{background:var(--accent-soft);color:var(--accent-ink)}
 .notice.info b{color:var(--accent-ink)}
 
+/* ── 第 6 步：能力迁移矩阵（L1/L2/L3 同色相明度阶梯）────────────── */
+.cap-bar{
+  display:flex;height:10px;border-radius:var(--radius-sm);
+  overflow:hidden;background:var(--cap-rail);
+}
+.cap-seg{height:100%}
+.cap-seg.l1{background:var(--cap-l1)}
+.cap-seg.l2{background:var(--cap-l2)}
+.cap-seg.l3{background:var(--cap-l3)}
+.cap-legend{
+  display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-5);
+  margin-top:var(--space-3);font-size:var(--text-xs);color:var(--fg-2);
+}
+.cap-key{display:flex;align-items:center;gap:var(--space-2)}
+.cap-key::before{
+  content:"";width:8px;height:8px;border-radius:2px;flex:none;background:var(--cap-rail);
+}
+.cap-key.l1::before{background:var(--cap-l1)}
+.cap-key.l2::before{background:var(--cap-l2)}
+.cap-key.l3::before{background:var(--cap-l3)}
+.cap-key b{color:var(--fg);font-weight:600}
+.cap-key .ch{color:var(--meta);font-variant-numeric:tabular-nums}
+
+.cap-verdict{
+  display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-4);align-items:baseline;
+  margin-top:var(--space-4);padding:var(--space-4) var(--space-5);
+  border:1px solid var(--border-soft);border-left:3px solid var(--accent);
+  border-radius:var(--radius-md);background:var(--accent-soft);
+}
+.cap-verdict .cv-code{
+  font-family:var(--font-mono);font-size:var(--text-xs);font-weight:700;
+  color:var(--accent-ink);letter-spacing:.06em;
+}
+.cap-verdict .cv-label{font-size:var(--text-base);font-weight:700;color:var(--fg)}
+.cap-verdict .cv-stat{
+  font-size:var(--text-xs);color:var(--meta);font-variant-numeric:tabular-nums;
+}
+.cap-verdict .cv-hint{font-size:var(--text-sm);color:var(--fg-2);flex-basis:100%}
+.cap-verdict .cv-reason{font-size:var(--text-xs);color:var(--meta);flex-basis:100%}
+
+.cap-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:var(--space-4);margin-top:var(--space-4);align-items:stretch;
+}
+/* 列即面板：三列能力项数量天然不等（多数人 L2 最多），
+   用面板底色承接短列下方的留白，读作「这一层的容器」而不是「页面没写完」。
+   用 fg-soft 而不是 surface-2：后者在 Editorial 是沙色，三个大色块会压过内容。 */
+.cap-col{
+  display:flex;flex-direction:column;gap:var(--space-1);min-width:0;
+  background:var(--fg-soft);border:1px solid var(--border);
+  border-radius:var(--radius-md);padding:var(--space-3) var(--space-4) var(--space-4);
+}
+.cap-col-h{
+  display:flex;align-items:baseline;gap:var(--space-2);
+  font-size:var(--text-xs);letter-spacing:.06em;color:var(--muted);
+  padding-bottom:var(--space-2);margin-bottom:var(--space-2);
+  border-bottom:1px solid var(--border-soft);
+}
+.cap-col-h .cl{
+  font-family:var(--font-mono);font-weight:700;color:var(--cap-l1-ink);
+  padding-left:var(--space-2);border-left:2px solid var(--cap-l1);
+}
+.cap-col.c2 .cap-col-h .cl{color:var(--cap-l2-ink);border-left-color:var(--cap-l2)}
+.cap-col.c3 .cap-col-h .cl{color:var(--cap-l3-ink);border-left-color:var(--cap-l3)}
+.cap-col-h .cn{margin-left:auto;font-variant-numeric:tabular-nums}
+
+/* 卡片不再自带底色与四边框：面板已经是一层容器，再加一层就是卡片套卡片 */
+.cap-card{
+  border:0;border-left:2px solid var(--cap-l1);
+  padding:var(--space-2) 0 var(--space-2) var(--space-3);
+  background:transparent;
+}
+.cap-col.c2 .cap-card{border-left-color:var(--cap-l2)}
+.cap-col.c3 .cap-card{border-left-color:var(--cap-l3)}
+.cap-card .ct{
+  display:flex;align-items:baseline;gap:var(--space-2);
+  font-size:var(--text-sm);font-weight:600;color:var(--fg);
+}
+.cap-card .ct .hit{
+  font-size:10px;font-weight:700;letter-spacing:.04em;flex:none;
+  padding:1px 5px;border-radius:var(--radius-sm);
+  background:var(--success-soft);color:var(--success-ink);
+}
+.cap-card .cd{font-size:var(--text-xs);color:var(--fg-2);margin-top:var(--space-1);line-height:1.5}
+.cap-card .cf{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap}
+.lv-dots{display:flex;gap:3px;flex:none}
+.lv-dot{width:8px;height:8px;border-radius:2px;background:var(--border)}
+.lv-dot.on{background:var(--cap-l1)}
+.cap-col.c2 .lv-dot.on{background:var(--cap-l2)}
+.cap-col.c3 .lv-dot.on{background:var(--cap-l3)}
+.cap-scope{
+  font-size:10px;padding:1px 6px;border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--fg-2);border:1px solid var(--border-soft);
+}
+.cap-ev{
+  font-size:var(--text-xs);color:var(--meta);margin-top:var(--space-2);line-height:1.5;
+}
+.cap-empty{font-size:var(--text-xs);color:var(--meta);padding:var(--space-3) 0}
+
+.gap-item{
+  display:flex;align-items:center;gap:var(--space-3);
+  padding:var(--space-3) 0;border-bottom:1px solid var(--border-soft);
+  font-size:var(--text-sm);color:var(--fg-2);
+}
+.gap-item:last-child{border-bottom:0}
+.gap-tag{
+  flex:none;font-family:var(--font-mono);font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:var(--radius-sm);
+  background:var(--cap-l1-soft);color:var(--cap-l1-ink);
+}
+.gap-tag.t2{background:var(--cap-l2-soft);color:var(--cap-l2-ink)}
+.gap-tag.t3{background:var(--cap-l3-soft);color:var(--cap-l3-ink)}
+.gap-item .gn{color:var(--fg);font-weight:600;flex:1;min-width:0}
+.gap-item .gw{
+  flex:none;font-size:var(--text-xs);color:var(--meta);
+  font-variant-numeric:tabular-nums;
+}
+
+.path-item{padding:var(--space-3) 0;border-bottom:1px solid var(--border-soft)}
+.path-item:last-child{border-bottom:0}
+.path-item .pt{
+  display:flex;align-items:center;gap:var(--space-2);
+  font-size:var(--text-sm);font-weight:600;color:var(--fg);
+}
+.path-item .pt::before{content:"→";color:var(--accent);font-weight:700;flex:none}
+.path-item .pj{
+  font-size:var(--text-xs);color:var(--meta);margin-top:var(--space-1);
+  font-variant-numeric:tabular-nums;
+}
+.path-item .pa{font-size:var(--text-xs);color:var(--fg-2);margin-top:var(--space-1);line-height:1.55}
+.cap-note{font-size:var(--text-xs);color:var(--accent-ink)}
+
 /* ── 页脚 / 复制 / 吐司 ──────────────────────────────────────────── */
 footer{
   padding:var(--space-12) var(--container-gutter-desktop);
@@ -622,6 +839,7 @@ footer{
     --section-y-desktop:var(--section-y-tablet);
     --container-gutter-desktop:var(--container-gutter-tablet);
   }
+  .cap-grid{grid-template-columns:1fr}
 }
 @media(max-width:640px){
   :root{
@@ -653,6 +871,14 @@ footer{
   .timeline::before{background:#ccc}
   a{color:#000;text-decoration:none}
   .chip,.kw,.starchip,.langchip,.tagchip,.modechip,.pb-badge{border:1px solid #ddd}
+  /* 第 6 步：占比条是「数据编码」而非装饰，黑白打印丢色会让它变成空轨 */
+  .cap-card,.cap-col,.cap-verdict,.gap-item,.path-item{border-color:#ddd;background:#fff}
+  .cap-col{background:#fff;border:1px solid #ddd}
+  .cap-bar{border:1px solid #ccc}
+  .cap-seg{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .lv-dot{background:#fff;border:1px solid #999}
+  .lv-dot.on{background:#666;border-color:#666;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cap-scope,.gap-tag,.cap-card .ct .hit{border:1px solid #ddd}
 }
 """
 
@@ -662,11 +888,19 @@ footer{
 # ----------------------------------------------------------------------------
 # HTML 组装
 # ----------------------------------------------------------------------------
-def build_html(data, theme_name, title, subtitle, no_repo):
+def build_html(data, theme_name, title, subtitle, no_repo, no_cap=False):
     t = THEMES[theme_name]
     meta = data.get("meta") or {}
     jobs = data.get("jobs") or []
     gl = data.get("global") or {}
+
+    # 第 6 步只在「至少一个岗位做了能力拆解」时生成。
+    # 老数据（v1.1 及更早）没有 capabilities，此处自动降级为五步页面，不报错。
+    has_caps = (not no_cap) and any(
+        isinstance(j.get("capabilities"), dict)
+        and (j["capabilities"].get("must") or j["capabilities"].get("plus"))
+        for j in jobs
+    )
 
     title = title or meta.get("title") or "简历蜕变引导"
     subtitle = subtitle or meta.get("subtitle") or ""
@@ -674,7 +908,7 @@ def build_html(data, theme_name, title, subtitle, no_repo):
     if not stats:
         stats = [
             {"n": str(len(jobs)), "l": "目标岗位"},
-            {"n": "5", "l": "蜕变步骤"},
+            {"n": "6" if has_caps else "5", "l": "蜕变步骤"},
         ]
 
     steps = [("step1", "① 岗位定锚")]
@@ -683,6 +917,8 @@ def build_html(data, theme_name, title, subtitle, no_repo):
     else:
         steps += [("step2", "② 定制简历"), ("step3", "③ 项目成果")]
     steps.append(("step5", "⑤ 蜕变路线"))
+    if has_caps:
+        steps.append(("step6", "⑥ 能力迁移"))
 
     nav = "".join(f'<a class="navlink" href="#{i}">{esc(l)}</a>' for i, l in steps)
 
@@ -699,6 +935,10 @@ def build_html(data, theme_name, title, subtitle, no_repo):
 
     subs = [f'{esc(data["meta"].get("company",""))} {esc(t["label"])} 岗位'
             if data.get("meta", {}).get("company") else esc(t["label"])]
+    step_word = "六步法" if has_caps else "五步法"
+    switch_sub = ("切换岗位后，下面各步（JD / 简历 / 项目 / 二创 / 能力）的内容会联动更新。"
+                  if has_caps else
+                  "切换岗位后，下面各步（JD / 简历 / 项目 / 二创）的内容会联动更新。")
     kw_note = ("<span class=\"placeholder\">[待补充]</span> 是<b>你必须自己填回的真实信息</b>，"
                "<span class=\"example\">【示例写法】</span> 只是表达范式，<b>请勿照抄内容</b>。")
 
@@ -723,7 +963,7 @@ def build_html(data, theme_name, title, subtitle, no_repo):
 
 <nav class="navbar">
   <div class="nav-inner">
-    <div class="brandmark">{esc(meta.get('brandmark') or '简历蜕变')} <span>×</span> 五步法</div>
+    <div class="brandmark">{esc(meta.get('brandmark') or '简历蜕变')} <span>×</span> {step_word}</div>
     {nav}
   </div>
 </nav>
@@ -735,7 +975,7 @@ def build_html(data, theme_name, title, subtitle, no_repo):
       <div class="sec-num">◎</div>
       <div>
         <h2>选择你要主攻的岗位</h2>
-        <p>切换岗位后，下面各步（JD / 简历 / 项目 / 二创）的内容会联动更新。</p>
+        <p>{switch_sub}</p>
       </div>
     </div>
     <div class="tabs" id="jobTabs"></div>
@@ -825,7 +1065,44 @@ def build_html(data, theme_name, title, subtitle, no_repo):
       </div>
     </div>
   </section>
+"""
 
+    if has_caps:
+        body += f"""
+  <section class="block" id="step6">
+    <div class="sec-head">
+      <div class="sec-num">6</div>
+      <div><h2>能力迁移矩阵 · 垂类 / 通用 / 跨类三层</h2>
+      <p>{esc(t['step6_sub'])}</p></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="ic blue">层</span>能力结构占比（按熟练度加权）</div>
+      <div class="card-b">
+        <div class="cap-bar" id="capBar"></div>
+        <div class="cap-legend" id="capLegend"></div>
+      </div>
+    </div>
+    <div id="capVerdict"></div>
+    <div class="cap-grid" id="capGrid"></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-h"><span class="ic orange">缺</span>能力缺口（按权重排序）</div>
+        <div class="card-b" id="capGapBox"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><span class="ic green">迁</span>迁移路径建议</div>
+        <div class="card-b" id="capPathBox"></div>
+      </div>
+    </div>
+    <div class="notice info"><span class="ni">ⓘ</span><div class="cap-note">
+      <b>L1</b> 换行业必须重新学语境才能用；<b>L2</b> 有可交付物、可被任意行业同口径验收；
+      <b>L3</b> 作用于能力本身的元能力。三层由 <b>capability_matrix.py</b> 确定性计算，
+      同族跨层按 0.6 折价——数字不是估的，改完自评请重跑脚本。
+    </div></div>
+  </section>
+"""
+
+    body += f"""
 </div>
 
 <footer>
@@ -839,7 +1116,8 @@ def build_html(data, theme_name, title, subtitle, no_repo):
 window.__JOBS__ = {json_for_script(jobs)};
 window.__GLOBAL__ = {json_for_script(gl)};
 window.__NO_REPO__ = {'true' if no_repo else 'false'};
-window.__CHK_KEY__ = {'"jt_chk_' + str(meta.get('station_id') or abs(hash(title)) % 10**8) + '"'};
+window.__HAS_CAP__ = {'true' if has_caps else 'false'};
+window.__CHK_KEY__ = {'"jt_chk_' + chk_key(title, meta) + '"'};
 </script>
 <script>{build_js()}</script>
 </body>
@@ -1055,14 +1333,138 @@ def build_js():
     document.body.removeChild(ta); done();
   }
 
+  // ── 第 6 步：能力迁移矩阵 ──────────────────────────────────────────
+  // 数据全部来自 j.matrix（capability_matrix.py 生成），这里只做模板拼装。
+  // 刻意不在 JS 里做任何算术：两份实现必然漂移，而「同一输入同一份额」是本 skill 的信任前提。
+  const TIER_NAME = {L1:'垂类专属', L2:'非垂类通用', L3:'跨类迁移'};
+  const TIERS = ['L1','L2','L3'];
+
+  function renderStep6(){
+    if(!window.__HAS_CAP__) return;
+    const j = JOBS()[cur] || {};
+    const m = j.matrix;
+    const bar = document.getElementById('capBar');
+    const legend = document.getElementById('capLegend');
+    const verdict = document.getElementById('capVerdict');
+    const grid = document.getElementById('capGrid');
+    const gapBox = document.getElementById('capGapBox');
+    const pathBox = document.getElementById('capPathBox');
+    if(!grid) return;
+
+    const barCard  = bar  ? bar.closest('.card')  : null;
+    const gapCard  = gapBox  ? gapBox.closest('.card')  : null;
+    const pathCard = pathBox ? pathBox.closest('.card') : null;
+    const pair = (gapCard && gapCard.parentNode) || null;   // .two-col
+    const show = (el, on) => { if(el) el.style.display = on ? '' : 'none'; };
+
+    // 该岗位没做能力拆解 / 还没跑脚本 → 只留一条说明，不摆空壳
+    if(!m || m.skipped){
+      const why = (m && m.reason) ? m.reason
+        : '该岗位尚未生成能力矩阵，请先运行 capability_matrix.py --merge 重算。';
+      show(barCard, false); show(grid, false); show(pair, false);
+      if(legend) legend.innerHTML = '';
+      if(verdict){
+        verdict.innerHTML = '<div class="notice info"><span class="ni">ℹ</span><div>' +
+          esc(why) + '</div></div>';
+      }
+      return;
+    }
+    show(grid, true); show(pair, true);
+
+    // ① 三层占比条（按熟练度加权，脚本已保证三项和为 100）
+    const share = m.share || {};
+    const shareSum = (share.L1||0) + (share.L2||0) + (share.L3||0);
+    show(barCard, shareSum > 0);
+    if(bar && shareSum > 0){
+      bar.innerHTML = TIERS.map((k,i) => {
+        const w = share[k] || 0;
+        if(!w) return '';
+        return '<div class="cap-seg l'+(i+1)+'" style="width:'+w+'%" title="'+
+          TIER_NAME[k]+' '+w+'%"></div>';
+      }).join('');
+    }
+    if(legend){
+      legend.innerHTML = TIERS.map((k,i) => {
+        const t = (m.tiers||{})[k] || {};
+        const hit = (t.hit === null || t.hit === undefined) ? '—' : (t.hit + '%');
+        return '<span class="cap-key l'+(i+1)+'"><b>'+k+'</b> '+TIER_NAME[k]+
+          ' <span class="ch">'+(share[k]||0)+'% · 命中 '+hit+' · '+(t.req||0)+' 项</span></span>';
+      }).join('');
+    }
+
+    // ② 场景结论
+    if(verdict){
+      const s = m.scene || {};
+      const num = v => (v === null || v === undefined) ? '—' : v;
+      verdict.innerHTML = '<div class="cap-verdict">' +
+        '<span class="cv-code">'+esc(s.code||'—')+'</span>' +
+        '<span class="cv-label">'+esc(s.label||'')+'</span>' +
+        '<span class="cv-stat">匹配度 '+num(m.score)+' · 覆盖 '+num(m.coverage)+
+          '% · 迁移 '+num(m.migrateRate)+'%</span>' +
+        '<span class="cv-hint">'+esc(s.hint||'')+'</span>' +
+        '<span class="cv-reason">'+esc(s.reason||'')+'</span>' +
+        '</div>';
+    }
+
+    // ③ 三列能力卡
+    const cols = m.columns || {};
+    grid.innerHTML = TIERS.map((k,i) => {
+      const rows = cols[k] || [];
+      const head = '<div class="cap-col-h"><span class="cl">'+k+'</span>'+
+        TIER_NAME[k]+'<span class="cn">'+rows.length+' 项</span></div>';
+      const body = rows.length ? rows.map(c => {
+        const lv = Math.max(0, Math.min(4, parseInt(c.lv,10) || 0));
+        const dots = [0,1,2,3].map(n =>
+          '<span class="lv-dot'+(n < lv ? ' on' : '')+'"></span>').join('');
+        const scope = (c.scope||[]).map(x =>
+          '<span class="cap-scope">'+esc(x)+'</span>').join('');
+        return '<div class="cap-card">' +
+          '<div class="ct">'+esc(c.name)+(c.hit ? '<span class="hit">JD 命中</span>' : '')+'</div>' +
+          (c.def ? '<div class="cd">'+esc(c.def)+'</div>' : '') +
+          '<div class="cf"><span class="lv-dots" title="熟练度 '+lv+'/4">'+dots+'</span>'+scope+'</div>' +
+          (c.evidence ? '<div class="cap-ev">'+hl(c.evidence)+'</div>' : '') +
+        '</div>';
+      }).join('') : '<div class="cap-empty">— 该层暂无能力项</div>';
+      return '<div class="cap-col c'+(i+1)+'">'+head+body+'</div>';
+    }).join('');
+
+    // ④ 缺口（脚本已按 权重↓ / 层级↑ / id↑ 排好序）
+    if(gapBox){
+      const gs = m.gap || [];
+      gapBox.innerHTML = gs.length ? gs.map(g => {
+        const cls = g.tier === 'L2' ? ' t2' : (g.tier === 'L3' ? ' t3' : '');
+        return '<div class="gap-item"><span class="gap-tag'+cls+'">'+esc(g.tier)+'</span>' +
+          '<span class="gn">'+esc(g.name)+'</span>' +
+          '<span class="gw">需 '+g.need+' · 现 '+g.have+' · 约 '+g.weeks+' 周</span></div>';
+      }).join('') :
+        '<div class="notice info" style="margin-top:0"><span class="ni">✓</span>' +
+        '<div>当前岗位三层均已覆盖，无硬缺口。</div></div>';
+    }
+
+    // ⑤ 迁移路径
+    if(pathBox){
+      const ps = m.paths || [];
+      pathBox.innerHTML = ps.length ? ps.map(p =>
+        '<div class="path-item"><div class="pt">'+esc(p.title)+'</div>' +
+        '<div class="pj">'+esc(p.from||'')+' → '+esc(p.to||'')+
+          (p.weeks ? ' · 约 '+p.weeks+' 周' : '')+'</div>' +
+        '<div class="pa">'+esc(p.action||'')+'</div></div>').join('') :
+        '<div class="notice info" style="margin-top:0"><span class="ni">ℹ</span>' +
+        '<div>暂无路径建议。</div></div>';
+    }
+  }
+
   function switchJob(i){
     if(i < 0 || i >= JOBS().length) return;
     cur = i;
-    renderTabs(); renderStep1(); renderStep2(); renderStep3(); renderStep4();
+    // 第 6 步必须跟着切：三层命中率、缺口、路径都是逐岗位数据。
+    // 只挂 renderAll 会让缺口清单停留在上一个岗位——页面不报错，内容却是错的。
+    renderTabs(); renderStep1(); renderStep2(); renderStep3(); renderStep4(); renderStep6();
   }
 
   function renderAll(){
-    renderTabs(); renderStep1(); renderStep2(); renderStep3(); renderStep4(); renderStep5();
+    renderTabs(); renderStep1(); renderStep2(); renderStep3();
+    renderStep4(); renderStep5(); renderStep6();
   }
 
   // 暴露给内联 onclick（以及外部验证脚本）
@@ -1070,8 +1472,8 @@ def build_js():
   window.copyResume = copyResume;
   window.renderAll = renderAll;
 
-  // 导航高亮
-  const secs = ['step1','step2','step3','step4','step5'];
+  // 导航高亮（step6 不存在时 getElementById 返回 null，循环已安全跳过）
+  const secs = ['step1','step2','step3','step4','step5','step6'];
   window.addEventListener('scroll', () => {
     let active = '';
     secs.forEach(id => {
@@ -1106,6 +1508,8 @@ def main():
     ap.add_argument("--theme", choices=sorted(THEMES), default=None,
                     help="主题，默认取 meta.track")
     ap.add_argument("--no-repo", action="store_true", help="跳过第 4 步")
+    ap.add_argument("--no-cap", action="store_true",
+                    help="跳过第 6 步（能力迁移矩阵），强制输出五步版本")
     ap.add_argument("--selftest", action="store_true", help="只校验数据，不生成")
     args = ap.parse_args()
 
@@ -1144,9 +1548,19 @@ def main():
     if not data.get("stats"):
         jobs = data.get("jobs") or []
         total_repos = sum(len(j.get("repos") or []) for j in jobs)
-        st = [{"n": str(len(jobs)), "l": "目标岗位"}, {"n": "5", "l": "蜕变步骤"}]
+        has_caps = (not args.no_cap) and any(
+            isinstance(j.get("capabilities"), dict)
+            and (j["capabilities"].get("must") or j["capabilities"].get("plus"))
+            for j in jobs)
+        st = [{"n": str(len(jobs)), "l": "目标岗位"},
+              {"n": "6" if has_caps else "5", "l": "蜕变步骤"}]
         if total_repos:
             st.append({"n": str(total_repos), "l": "二创来源"})
+        if has_caps:
+            n_cap = max((len((j.get("matrix") or {}).get("columns", {}).get(t) or [])
+                         for j in jobs for t in ("L1", "L2", "L3")), default=0)
+            if n_cap:
+                st.append({"n": str(n_cap), "l": "能力项/层"})
         if (data.get("global") or {}).get("roadmap"):
             st.append({"n": str(len(data["global"]["roadmap"])), "l": "执行阶段"})
         data["stats"] = st
@@ -1154,7 +1568,8 @@ def main():
     for w in warns:
         print("WARN   " + w, file=sys.stderr)
 
-    html_out = build_html(data, theme, args.title, args.subtitle, args.no_repo)
+    html_out = build_html(data, theme, args.title, args.subtitle,
+                          args.no_repo, args.no_cap)
 
     with open(args.out, "w", encoding="utf-8") as f:
         f.write(html_out)

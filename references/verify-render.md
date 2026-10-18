@@ -95,8 +95,35 @@ chrome --headless=new --disable-gpu --hide-scrollbars \
 | `[待补充]` 红色高亮 | 搜 `class="placeholder"` 数量 > 0 |
 | `【示例写法】` 紫色高亮 | 搜 `class="example"` |
 | 第 5 步勾选持久化 | 注入 `localStorage.setItem('..._chk','[1,0,1]')` 后重渲染，确认勾选态 |
+| 第 6 步占比条三段之和 == 100 | 读 `.cap-seg` 上的宽度百分比相加；出现 `0%` 段是正常的 |
+| **切岗位后第 6 步跟着变** | 注入 `switchJob(1)`，比对 `#capGapBox` 文本。不变就是 bug，见下 |
+| 第 6 步三层色阶可辨 | L1 最深、L3 最浅；灰度截图下仍应能分出三段 |
 | 无 JS 报错 | 步骤 2 的 title 不含 `ERR|` |
 | 三个主题都正常 | `--theme art` / `biz` 各生成一次截图 |
+
+### 第 6 步的静默失败：`renderStep6()` 只挂了一半
+
+这是本项目最容易漏、也最难发现的 bug，**页面完全不报错**：
+
+```javascript
+function switchJob(i){ ... renderStep1(); ...; renderStep4(); }   // ← 漏了 renderStep6
+function renderAll(){ ...; renderStep5(); renderStep6(); }        // ← 只有这里挂了
+```
+
+后果：首次加载时第 6 步是对的（`renderAll` 跑过），但用户一切岗位，
+三层占比、缺口清单、迁移路径全部停留在**上一个岗位**的数字。看起来像「这两个岗位能力要求差不多」，
+实际是数据没换。
+
+三道防线，建议全上：
+
+1. **源码断言**：`verify.py` 的「第 6 步接线检查」会解析 `render.py`，断言 `renderStep6()`
+   同时出现在 `renderAll` 与 `switchJob` 的函数体内。
+2. **产出断言**：渲染后 grep `renderStep6` 出现次数 ≥ 3（定义 + 两处调用）。
+3. **肉眼验收**：切到第二个岗位截图，确认缺口清单的条目名变了。
+
+> 同类风险还有一处：`matrix` 缺失时 `renderStep6` 会整体降级成一条 `.notice`，
+> 页面看起来「有个提示」，很容易被当成正常状态略过。验收时确认 `.cap-grid` 真的存在，
+> 而不只是 `#step6` 存在。
 
 ## 步骤 5 · 清理
 

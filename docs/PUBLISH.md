@@ -10,7 +10,7 @@
 > 想先看结果长什么样，直接打开上面这个地址——它就是按本文流程发布出来的，
 > 包括 README 配图、`docs/PUBLISH.md`、Release 附件和 Pages 在线预览。
 > 最终形态参考：[仓库首页](https://github.com/NiuBi66666688/job-lailailai) ·
-> [Release v1.1.0](https://github.com/NiuBi66666688/job-lailailai/releases/tag/v1.1.0) ·
+> [Release v2.0.0](https://github.com/NiuBi66666688/job-lailailai/releases/tag/v2.0.0) ·
 > [Pages 预览](https://niubi66666688.github.io/job-lailailai/)
 
 ---
@@ -147,12 +147,13 @@ EOF
 git init -b main
 git add .
 git status --short          # 先看一眼将提交什么
-git commit -m "feat: job-lailailai 求职简历蜕变引导 v1.1.0
+git commit -m "feat: job-lailailai 求职简历蜕变引导 v2.0.0
 
 可移植 agent skill：把招聘网站真实岗位 JD 翻译成可执行的简历蜕变方案。
-- 五步流水线：岗位定锚 → 定制简历 → 项目成果 → 二创来源 → 蜕变路线
+- 六步流水线：岗位定锚 → 定制简历 → 项目成果 → 二创来源 → 蜕变路线 → 能力迁移
+- 三级能力体系：垂类专属 L1 / 非垂类通用 L2 / 跨类迁移 L3（按验收方判定）
 - 三套设计系统：sci/Vercel · art/Editorial · biz/Stripe（token 驱动）
-- 零第三方依赖，五个 Python 脚本 + 八份细则文档
+- 零第三方依赖，六个 Python 脚本 + 九份细则文档
 - 跨平台：WorkBuddy / Claude Code / Cursor / Codex / Qoder"
 ```
 
@@ -212,10 +213,10 @@ python build/pack.py                 # 产出 dist/job-lailailai-portable-<版�
 再发布：
 
 ```bash
-VERSION=1.1.0
+VERSION=2.0.0
 gh release create "v$VERSION" \
   "dist/job-lailailai-portable-$VERSION-*.zip" \
-  --title "v$VERSION · 三套设计系统 + 跨平台安装" \
+  --title "v$VERSION · 三级能力体系 + 能力迁移矩阵" \
   --notes-file docs/RELEASE_NOTES.md
 ```
 
@@ -223,11 +224,15 @@ gh release create "v$VERSION" \
 
 ```markdown
 ## 新增
-- 视觉层改为 token 驱动，三个学科轨道各绑一套真实设计系统（Vercel / Editorial / Stripe）
+- 三级能力体系（垂类专属 L1 / 非垂类通用 L2 / 跨类迁移 L3），按「谁在验收」判定
+- 第 6 步能力迁移矩阵：三层占比 / 命中率 / 缺口 / 跳板路径，由确定性脚本算出
 
 ## 修复
-- `install.py` 自检在非默认安装位置必然失败（会卡住「迁移到异地」）
-- `references/verify-render.md` 探针注入代码的悬空 `<script>` bug
+- `render.py` 用 `abs(hash())` 做 localStorage key，重渲染后勾选进度会丢
+- `data-contract.md` 漏记 `jobs[].major` / `jobs[].grade`
+
+## 兼容
+- 老数据（无 `capabilities`）仍渲染五步版本，与 v1.1 逐字节一致
 
 ## 安装
 见 README 的「快速开始」一节。
@@ -260,19 +265,24 @@ gh release create "v$VERSION" \
 
 | 图名 | 内容 |
 | --- | --- |
-| `flow-pipeline.png` | 五步流水线 |
+| `flow-pipeline.png` | 六步流水线 |
+| `flow-tiers.png` | 三级能力体系（L1/L2/L3 与验收方） |
 | `hero-sci.png` / `hero-art.png` / `hero-biz.png` | 三套设计系统首屏对比 |
 | `full-sci.png` | sci 主题整页总览 |
 | `shot-switcher.png` | 岗位切换器 |
-| `shot-step1.png` ~ `shot-step5.png` | 五个步骤的分区截图 |
+| `shot-step1.png` ~ `shot-step6.png` | 六个步骤的分区截图 |
 
 重新生成它们：
 
 ```bash
+# 0) 先算三级能力矩阵（不跑这步，第 6 步不会出现）
+python scripts/capability_matrix.py --profile examples/profile.sample.json \
+       --jobs examples/jobs.sample.json --merge --out /tmp/jobs.json
+
 # 1) 渲染三主题页面
-python scripts/render.py examples/jobs.sample.json docs/preview/demo-sci.html --theme sci
-python scripts/render.py examples/jobs.sample.json docs/preview/demo-art.html --theme art
-python scripts/render.py examples/jobs.sample.json docs/preview/demo-biz.html --theme biz
+python scripts/render.py /tmp/jobs.json docs/preview/demo-sci.html --theme sci
+python scripts/render.py /tmp/jobs.json docs/preview/demo-art.html --theme art
+python scripts/render.py /tmp/jobs.json docs/preview/demo-biz.html --theme biz
 
 # 2) 起本地服务后用无头 Chrome 截图
 #    具体命令与坑位见 references/verify-render.md
@@ -445,13 +455,13 @@ python verify.py                    # 必须全绿
 gh auth login                       # 首次
 git init -b main
 git add .
-git commit -m "feat: job-lailailai v1.1.0"
+git commit -m "feat: job-lailailai v2.0.0"
 gh repo create job-lailailai --public --source=. --remote=origin --push
 
 # ── 上线 ──────────────────────────────────────────
 git push -u origin main
 python build/pack.py
-gh release create v1.1.0 dist/*.zip --title "v1.1.0" --notes-file docs/RELEASE_NOTES.md
+gh release create v2.0.0 dist/*.zip --title "v2.0.0" --notes-file docs/RELEASE_NOTES.md
 
 # ── 校验（务必在空目录） ───────────────────────────
 cd /tmp && git clone https://github.com/<owner>/job-lailailai.git fresh

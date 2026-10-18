@@ -8,18 +8,28 @@
 ## 一句话
 
 把招聘网站的真实岗位 JD，翻译成用户可执行的简历蜕变方案：
-**岗位定锚 → 定制简历 → 项目成果 → 二创来源 → 蜕变路线**，
-最终产出单文件可视化 HTML 引导页（顶部岗位切换器，切换时前四步内容联动）。
+**岗位定锚 → 定制简历 → 项目成果 → 二创来源 → 蜕变路线 → 能力迁移**，
+最终产出单文件可视化 HTML 引导页（顶部岗位切换器，切换时第 1–4 步与第 6 步联动）。
 
 ## 核心要点
 
-1. **问答先行**。先用 `AskUserQuestion` 采集专业 / 届别 / 技能 / 目标（一轮最多 4 题），再检索、再生成。
+1. **问答先行**。先用 `AskUserQuestion` 采集专业 / 届别 / 技能 / 目标 / **能力自评**
+   （一轮最多 4 题，共 4 轮），再检索、再生成。
 2. **数据真实可溯源**。岗位来自联网检索，每条记录 `url` / `source` / `fetchedAt`；查不到就写「未检索到」。
-3. **确定性优先**。岗位匹配打分、JD 切分用 `scripts/` 下的脚本算，**不要让模型估**（同一输入必须同一分数）。
+3. **确定性优先**。岗位匹配打分、JD 切分、三级能力矩阵用 `scripts/` 下的脚本算，
+   **不要让模型估**（同一输入必须同一分数；占比三项和恒为 100 靠最大余额法，模型算不出这个约束）。
 4. **文理双轨**。人文社科同样要走招聘站检索，不许默认推代码项目。
-5. **视觉只改 token 层**。页面样式由 `scripts/design_systems.py` 驱动，三个轨道各绑一套真实设计系统；
+5. **三层能力按「谁在验收」分，不按熟练度分**。
+   `L1` 垂类专属（行业内部的人验收）/ `L2` 非垂类通用（通用管理标尺验收）/
+   `L3` 跨类迁移（元能力，无相邻替代品，**永远不打迁移折价**）。
+   十年资深文案的内容能力仍是 `L1`；「跨 3 个行业协调过团队」仍是 `L2`。
+   细则见 `references/capability-tiers.md`。
+6. **`matrix` 只允许脚本生成**。手写会与 `profile.json` 的自评漂移，页面不报错但结论是错的。
+   数据流向永远是「profile + capabilities → `capability_matrix.py` → `matrix`」。
+7. **视觉只改 token 层**。页面样式由 `scripts/design_systems.py` 驱动，三个轨道各绑一套真实设计系统；
    **不要在 `render.py` 里手写色值**，要新颜色先在 token 层派生。
-6. **产出必须验证**。渲染后用无头浏览器截图肉眼确认，不要声称「应该能跑」。
+8. **产出必须验证**。渲染后用无头浏览器截图肉眼确认，不要声称「应该能跑」。
+   特别要确认**切岗位后第 6 步的缺口清单跟着变**——这是最容易出的静默 bug。
 
 ## 目录
 
@@ -34,13 +44,15 @@ requirements.txt        依赖声明（零第三方依赖）
 verify.py               落地后一键验收（先跑这个）
 scripts/match_score.py  岗位匹配打分（确定性，可复现）
 scripts/split_jd.py     招聘页正文 → 结构化 JD
+scripts/capability_matrix.py  三级能力矩阵（占比 / 命中 / 折价 / 场景 / 路径）
 scripts/design_systems.py  视觉层 token（Vercel / Editorial / Stripe 三套）
 scripts/render.py       生成单文件 HTML 引导页
 scripts/install.py      跨平台安装（--detect / --target）
-references/             按需读的细则：检索配方 / 维度库 / 简历规则 / 二创矩阵 /
-                        数据契约 / 设计系统 / 渲染验证 / 跨平台坑位
-examples/jobs.sample.json  可运行样例数据（验证链路用）
-examples/demo.html         构建产物：样例渲染出的单文件页面
+references/             按需读的细则：检索配方 / 维度库 / 三级能力体系 / 简历规则 /
+                        二创矩阵 / 数据契约 / 设计系统 / 渲染验证 / 跨平台坑位
+examples/jobs.sample.json     可运行样例岗位（含 capabilities，六步法）
+examples/profile.sample.json  可运行样例能力自评（10 项，三层齐全）
+examples/demo.html            构建产物：样例渲染出的单文件页面
 docs/PUBLISH.md         发布上线指南（含每步骤配图要求）
 docs/preview/           三主题在线预览页（GitHub Pages 入口在 docs/index.html）
 docs/images/            README 与 PUBLISH 的配图
@@ -55,6 +67,7 @@ docs/images/            README 与 PUBLISH 的配图
 ```bash
 python scripts/match_score.py --profile profile.json --jobs jobs.json
 python scripts/split_jd.py --raw page.txt --out jd.json
+python scripts/capability_matrix.py --profile profile.json --jobs jobs.json --merge
 python scripts/render.py jobs.json out.html
 python verify.py            # 迁移后先跑这个
 ```
